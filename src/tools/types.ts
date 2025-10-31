@@ -152,8 +152,8 @@ export interface ToolSpec {
  * Tool choice strategy for model tool selection.
  */
 export type ToolChoice =
-    | { auto: {} }      // Model decides when to use tools
-    | { any: {} }       // Model must use a tool
+    | { auto: Record<string, never> }      // Model decides when to use tools
+    | { any: Record<string, never> }       // Model must use a tool
     | { tool: { name: string } };  // Model must use specific tool
 
 /**

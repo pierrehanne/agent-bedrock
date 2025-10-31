@@ -98,7 +98,7 @@ export class StreamHandler {
 
         // Create tracer subsegment for the stream operation
         const streamStartTime = Date.now();
-        let eventCount = 0;
+        const eventCount = 0;
 
         try {
             // Execute the stream request within a tracer subsegment

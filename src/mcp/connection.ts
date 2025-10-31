@@ -469,7 +469,7 @@ export class McpServerConnection {
      * 
      * @returns Array of tool definitions
      */
-    async listTools(): Promise<McpTool[]> {
+    listTools(): Promise<McpTool[]> {
         if (!this.isConnected()) {
             throw new McpConnectionError(
                 this.config.name,
@@ -542,7 +542,7 @@ export class McpServerConnection {
             if (response.content && Array.isArray(response.content) && response.content.length > 0) {
                 // If single text content, return the text directly
                 if (response.content.length === 1 && response.content[0].type === 'text') {
-                    return (response.content[0] as any).text;
+                    return (response.content[0]).text;
                 }
                 // Otherwise return the full content array
                 return response.content;
@@ -591,7 +591,7 @@ export class McpServerConnection {
      * 
      * @returns Array of resource definitions
      */
-    async listResources(): Promise<McpResource[]> {
+    listResources(): Promise<McpResource[]> {
         if (!this.isConnected()) {
             throw new McpConnectionError(
                 this.config.name,

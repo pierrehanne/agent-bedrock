@@ -395,12 +395,12 @@ export class ToolExecutor {
                     const value = input[propName];
                     const expectedType = (propSchema as any).type;
 
-                    if (expectedType && !this.validateType(value, expectedType)) {
+                    if (expectedType && !this.validateType(value, String(expectedType))) {
                         throw new ToolExecutionError(
                             toolName,
-                            `Invalid type for field '${propName}': expected ${expectedType}, got ${typeof value}`,
+                            `Invalid type for field '${propName}': expected ${String(expectedType)}, got ${typeof value}`,
                             undefined,
-                            { schema, input, field: propName }
+                            { schema, input, field: propName } as Record<string, unknown>
                         );
                     }
                 }
@@ -409,7 +409,7 @@ export class ToolExecutor {
 
         this.logger.debug('Tool input validated', {
             toolName,
-            inputKeys: Object.keys(input),
+            inputKeys: Object.keys(input as Record<string, unknown>),
         });
     }
 

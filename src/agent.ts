@@ -402,7 +402,7 @@ export class Agent {
     private async processConversationTurn(input: ConverseInput): Promise<ConverseResponse> {
         const maxToolUseIterations = 10; // Prevent infinite loops
         let iteration = 0;
-        let totalUsage = {
+        const totalUsage = {
             inputTokens: 0,
             outputTokens: 0,
             totalTokens: 0,
@@ -862,7 +862,7 @@ export class Agent {
     ): AsyncGenerator<StreamEvent, void, unknown> {
         const maxToolUseIterations = 10; // Prevent infinite loops
         let iteration = 0;
-        let totalUsage = {
+        const totalUsage = {
             inputTokens: 0,
             outputTokens: 0,
             totalTokens: 0,

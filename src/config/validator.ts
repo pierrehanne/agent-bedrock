@@ -720,7 +720,7 @@ export class InputValidator {
         }
 
         const validFormats = ['png', 'jpeg', 'gif', 'webp'];
-        if (!content.image.format || !validFormats.includes(content.image.format)) {
+        if (!content.image.format || !validFormats.includes(String(content.image.format))) {
             throw new ValidationError(
                 `Image format must be one of: ${validFormats.join(', ')}`,
                 { field: 'content.image.format', value: content.image.format }
@@ -768,7 +768,7 @@ export class InputValidator {
         }
 
         const validFormats = ['pdf', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'html', 'txt', 'md'];
-        if (!content.document.format || !validFormats.includes(content.document.format)) {
+        if (!content.document.format || !validFormats.includes(String(content.document.format))) {
             throw new ValidationError(
                 `Document format must be one of: ${validFormats.join(', ')}`,
                 { field: 'content.document.format', value: content.document.format }
@@ -823,7 +823,7 @@ export class InputValidator {
         }
 
         const validFormats = ['mp4', 'mov', 'avi', 'flv', 'mkv', 'webm'];
-        if (!content.video.format || !validFormats.includes(content.video.format)) {
+        if (!content.video.format || !validFormats.includes(String(content.video.format))) {
             throw new ValidationError(
                 `Video format must be one of: ${validFormats.join(', ')}`,
                 { field: 'content.video.format', value: content.video.format }
@@ -989,7 +989,7 @@ export class InputValidator {
             }
 
             // Validate all header values are strings
-            for (const [key, value] of Object.entries(config.headers)) {
+            for (const [key, value] of Object.entries(config.headers as Record<string, unknown>)) {
                 if (typeof value !== 'string') {
                     throw new ValidationError(
                         `Authentication header "${key}" must have a string value`,

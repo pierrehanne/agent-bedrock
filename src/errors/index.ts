@@ -406,10 +406,10 @@ export class McpResourceError extends BedrockAgentError {
         context?: Record<string, any>
     ) {
         super(
-            `MCP resource error [${serverName}/${resourceUri}]: ${message}`,
+            `MCP resource error [${String(serverName)}/${String(resourceUri)}]: ${message}`,
             ErrorCode.MCP_RESOURCE_ERROR,
             cause,
-            { ...context, serverName, resourceUri }
+            { ...context, serverName, resourceUri } as Record<string, unknown>
         );
         this.name = 'McpResourceError';
         this.serverName = serverName;

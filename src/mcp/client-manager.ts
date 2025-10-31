@@ -242,7 +242,7 @@ export class McpClientManager {
                     }).catch(() => {
                         // Keep count at 0 on error
                     });
-                } catch (error) {
+                } catch {
                     // Ignore errors, keep counts at 0
                 }
             } else if (status.state === 'error') {
