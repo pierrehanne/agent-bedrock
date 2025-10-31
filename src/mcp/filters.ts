@@ -1,6 +1,6 @@
 /**
  * Tool filtering utilities for MCP servers.
- * 
+ *
  * This module provides functions for filtering MCP tools based on
  * allowedTools and deniedTools configuration.
  */
@@ -35,33 +35,33 @@ export interface FilterResult {
 
 /**
  * Apply tool filtering rules to a list of MCP tools.
- * 
+ *
  * Filtering is applied in two stages:
  * 1. If allowedTools is specified, only tools matching the list are kept
  * 2. If deniedTools is specified, tools matching the list are removed
- * 
+ *
  * This allows for flexible filtering patterns:
  * - Whitelist only: specify allowedTools
  * - Blacklist only: specify deniedTools
  * - Combined: allowedTools applied first, then deniedTools
- * 
+ *
  * @param tools - Array of MCP tools to filter
  * @param filter - Tool filter configuration
  * @param logger - Optional logger for observability
  * @returns Filter result with filtered tools and statistics
- * 
+ *
  * @example
  * ```typescript
  * // Whitelist specific tools
  * const result1 = filterTools(tools, {
  *   allowedTools: ['get_weather', 'get_forecast']
  * });
- * 
+ *
  * // Blacklist dangerous tools
  * const result2 = filterTools(tools, {
  *   deniedTools: ['delete_database', 'shutdown_server']
  * });
- * 
+ *
  * // Combined filtering
  * const result3 = filterTools(tools, {
  *   allowedTools: ['get_*', 'list_*'],
@@ -72,7 +72,7 @@ export interface FilterResult {
 export function filterTools(
     tools: McpTool[],
     filter: McpToolFilter,
-    logger?: Logger
+    logger?: Logger,
 ): FilterResult {
     const originalCount = tools.length;
     let filtered = [...tools]; // Create a copy to avoid mutating input
@@ -82,7 +82,7 @@ export function filterTools(
         const allowedSet = new Set(filter.allowedTools);
         const beforeCount = filtered.length;
 
-        filtered = filtered.filter(tool => allowedSet.has(tool.name));
+        filtered = filtered.filter((tool) => allowedSet.has(tool.name));
 
         const removedByAllow = beforeCount - filtered.length;
         if (logger && removedByAllow > 0) {
@@ -99,7 +99,7 @@ export function filterTools(
         const deniedSet = new Set(filter.deniedTools);
         const beforeCount = filtered.length;
 
-        filtered = filtered.filter(tool => !deniedSet.has(tool.name));
+        filtered = filtered.filter((tool) => !deniedSet.has(tool.name));
 
         const removedByDeny = beforeCount - filtered.length;
         if (logger && removedByDeny > 0) {
@@ -135,7 +135,7 @@ export function filterTools(
 
 /**
  * Check if a tool filter has any filtering rules configured.
- * 
+ *
  * @param filter - Tool filter configuration
  * @returns true if filter has allowedTools or deniedTools configured
  */
@@ -152,12 +152,12 @@ export function hasFilterRules(filter?: McpToolFilter): boolean {
 
 /**
  * Validate tool filter configuration.
- * 
+ *
  * Checks for common configuration issues:
  * - Empty arrays (should be undefined instead)
  * - Duplicate tool names within a list
  * - Tool names in both allowed and denied lists
- * 
+ *
  * @param filter - Tool filter configuration to validate
  * @returns Array of validation warning messages (empty if valid)
  */
@@ -197,12 +197,12 @@ export function validateToolFilter(filter: McpToolFilter): string[] {
         filter.deniedTools.length > 0
     ) {
         const deniedSet = new Set(filter.deniedTools);
-        const overlap = filter.allowedTools.filter(tool => deniedSet.has(tool));
+        const overlap = filter.allowedTools.filter((tool) => deniedSet.has(tool));
 
         if (overlap.length > 0) {
             warnings.push(
                 `Tools appear in both allowedTools and deniedTools: ${overlap.join(', ')} ` +
-                '(these tools will be denied)'
+                    '(these tools will be denied)',
             );
         }
     }

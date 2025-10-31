@@ -1,6 +1,6 @@
 /**
  * Memory-related type definitions for the Agent Bedrock.
- * 
+ *
  * This module contains interfaces and types for managing conversation
  * history in both short-term (in-memory) and long-term (persistent) storage.
  */
@@ -48,7 +48,7 @@ export interface PruneOptions {
 
     /**
      * Strategy for selecting messages to prune.
-     * 
+     *
      * @default 'oldest'
      */
     strategy?: 'oldest' | 'least-important';

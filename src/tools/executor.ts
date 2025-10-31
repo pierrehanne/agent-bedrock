@@ -1,34 +1,28 @@
 /**
  * Tool execution module for the Agent Bedrock.
- * 
+ *
  * This module provides the ToolExecutor class that manages tool registration,
  * validation, and execution for Agent tool use capabilities.
  */
 
 import type { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
-import type {
-    ToolDefinition,
-    ToolUse,
-    ToolResult,
-    ToolSpec,
-    JSONSchema,
-} from './types.js';
+import type { ToolDefinition, ToolUse, ToolResult, ToolSpec, JSONSchema } from './types.js';
 import { ToolExecutionError, McpToolExecutionError } from '../errors/index.js';
 import type { McpClientManager } from '../mcp/client-manager.js';
 
 /**
  * Manages tool registration and execution for Agent instances.
- * 
+ *
  * The ToolExecutor maintains a registry of available tools, validates
  * tool inputs against JSON schemas, and executes tool handlers with
  * comprehensive error handling and observability. Supports both local
  * tools and MCP server tools.
- * 
+ *
  * @example
  * ```typescript
  * const executor = new ToolExecutor(tools, mcpClientManager, logger, metrics);
- * 
+ *
  * const result = await executor.executeTool({
  *   toolUseId: 'tool_123',
  *   name: 'get_weather',
@@ -59,7 +53,7 @@ export class ToolExecutor {
 
     /**
      * Creates a new ToolExecutor instance.
-     * 
+     *
      * @param toolDefinitions - Array of tool definitions to register
      * @param mcpClientManager - MCP Client Manager for MCP tool access (optional)
      * @param logger - Logger instance for observability
@@ -69,7 +63,7 @@ export class ToolExecutor {
         toolDefinitions: ToolDefinition[],
         mcpClientManager: McpClientManager | undefined,
         logger: Logger,
-        metrics: Metrics
+        metrics: Metrics,
     ) {
         this.tools = new Map();
         this.mcpClientManager = mcpClientManager;
@@ -90,13 +84,13 @@ export class ToolExecutor {
 
     /**
      * Registers a tool in the executor's registry.
-     * 
+     *
      * Validates the tool definition and adds it to the registry.
      * If a tool with the same name already exists, it will be replaced.
-     * 
+     *
      * @param tool - Tool definition to register
      * @throws {ToolExecutionError} If tool definition is invalid
-     * 
+     *
      * @example
      * ```typescript
      * executor.registerTool({
@@ -118,28 +112,28 @@ export class ToolExecutor {
         if (!tool.name || typeof tool.name !== 'string') {
             throw new ToolExecutionError(
                 tool.name || 'unknown',
-                'Tool name is required and must be a string'
+                'Tool name is required and must be a string',
             );
         }
 
         if (!tool.description || typeof tool.description !== 'string') {
             throw new ToolExecutionError(
                 tool.name,
-                'Tool description is required and must be a string'
+                'Tool description is required and must be a string',
             );
         }
 
         if (!tool.inputSchema || typeof tool.inputSchema !== 'object') {
             throw new ToolExecutionError(
                 tool.name,
-                'Tool inputSchema is required and must be an object'
+                'Tool inputSchema is required and must be an object',
             );
         }
 
         if (!tool.handler || typeof tool.handler !== 'function') {
             throw new ToolExecutionError(
                 tool.name,
-                'Tool handler is required and must be a function'
+                'Tool handler is required and must be a function',
             );
         }
 
@@ -147,7 +141,7 @@ export class ToolExecutor {
         if (!/^[a-zA-Z0-9_]+$/.test(tool.name)) {
             throw new ToolExecutionError(
                 tool.name,
-                'Tool name must be alphanumeric with underscores only'
+                'Tool name must be alphanumeric with underscores only',
             );
         }
 
@@ -161,15 +155,15 @@ export class ToolExecutor {
 
     /**
      * Executes a tool based on a tool use request from the model.
-     * 
+     *
      * Routes execution to either local tools or MCP server tools based on
      * tool availability. Validates the tool exists, validates the input,
      * executes the handler, and returns a formatted result. Includes
      * comprehensive error handling and observability.
-     * 
+     *
      * @param toolUse - Tool use request from the model
      * @returns Promise resolving to tool execution result
-     * 
+     *
      * @example
      * ```typescript
      * const result = await executor.executeTool({
@@ -198,12 +192,12 @@ export class ToolExecutor {
 
     /**
      * Checks if a tool is a local tool or an MCP tool.
-     * 
+     *
      * Local tools take precedence over MCP tools if there's a name conflict.
-     * 
+     *
      * @param toolName - Name of the tool to check
      * @returns True if tool is local, false if it's an MCP tool
-     * 
+     *
      * @private
      */
     private isLocalTool(toolName: string): boolean {
@@ -212,13 +206,13 @@ export class ToolExecutor {
 
     /**
      * Executes a local tool.
-     * 
+     *
      * Validates the tool exists, validates the input against the schema,
      * executes the handler, and returns a formatted result.
-     * 
+     *
      * @param toolUse - Tool use request from the model
      * @returns Promise resolving to tool execution result
-     * 
+     *
      * @private
      */
     private async executeLocalTool(toolUse: ToolUse): Promise<ToolResult> {
@@ -229,12 +223,9 @@ export class ToolExecutor {
             // Check if tool exists
             const tool = this.tools.get(name);
             if (!tool) {
-                throw new ToolExecutionError(
-                    name,
-                    `Local tool not found: ${name}`,
-                    undefined,
-                    { availableTools: Array.from(this.tools.keys()) }
-                );
+                throw new ToolExecutionError(name, `Local tool not found: ${name}`, undefined, {
+                    availableTools: Array.from(this.tools.keys()),
+                });
             }
 
             // Validate tool input
@@ -275,13 +266,13 @@ export class ToolExecutor {
 
     /**
      * Executes an MCP tool.
-     * 
+     *
      * Routes the tool call to the appropriate MCP server via the MCP Client Manager.
      * Handles MCP-specific errors and provides fallback responses.
-     * 
+     *
      * @param toolUse - Tool use request from the model
      * @returns Promise resolving to tool execution result
-     * 
+     *
      * @private
      */
     private async executeMcpTool(toolUse: ToolUse): Promise<ToolResult> {
@@ -295,7 +286,7 @@ export class ToolExecutor {
                 name,
                 'MCP Client Manager not available',
                 undefined,
-                { toolName: name }
+                { toolName: name },
             );
             return this.handleToolError(name, toolUseId, error, latencyMs, 'mcp');
         }
@@ -338,30 +329,21 @@ export class ToolExecutor {
 
     /**
      * Validates tool input against the tool's JSON schema.
-     * 
+     *
      * Performs basic JSON schema validation to ensure the input
      * matches the expected structure and required fields.
-     * 
+     *
      * @param toolName - Name of the tool
      * @param input - Input to validate
      * @param schema - JSON schema to validate against
      * @throws {ToolExecutionError} If validation fails
-     * 
+     *
      * @private
      */
-    private validateToolInput(
-        toolName: string,
-        input: any,
-        schema: JSONSchema
-    ): void {
+    private validateToolInput(toolName: string, input: any, schema: JSONSchema): void {
         // Check if input is provided
         if (input === undefined || input === null) {
-            throw new ToolExecutionError(
-                toolName,
-                'Tool input is required',
-                undefined,
-                { schema }
-            );
+            throw new ToolExecutionError(toolName, 'Tool input is required', undefined, { schema });
         }
 
         // Validate type
@@ -370,7 +352,7 @@ export class ToolExecutor {
                 toolName,
                 `Tool input must be an object, got ${typeof input}`,
                 undefined,
-                { schema, input }
+                { schema, input },
             );
         }
 
@@ -382,7 +364,7 @@ export class ToolExecutor {
                         toolName,
                         `Missing required field: ${requiredField}`,
                         undefined,
-                        { schema, input, missingField: requiredField }
+                        { schema, input, missingField: requiredField },
                     );
                 }
             }
@@ -400,7 +382,7 @@ export class ToolExecutor {
                             toolName,
                             `Invalid type for field '${propName}': expected ${String(expectedType)}, got ${typeof value}`,
                             undefined,
-                            { schema, input, field: propName } as Record<string, unknown>
+                            { schema, input, field: propName } as Record<string, unknown>,
                         );
                     }
                 }
@@ -415,11 +397,11 @@ export class ToolExecutor {
 
     /**
      * Validates a value against a JSON schema type.
-     * 
+     *
      * @param value - Value to validate
      * @param expectedType - Expected JSON schema type
      * @returns True if value matches type, false otherwise
-     * 
+     *
      * @private
      */
     private validateType(value: any, expectedType: string): boolean {
@@ -445,18 +427,18 @@ export class ToolExecutor {
 
     /**
      * Handles tool execution errors and creates error tool results.
-     * 
+     *
      * Logs the error, records metrics, and returns a formatted error
      * result that can be sent back to the model. Provides fallback
      * responses for MCP tool execution failures.
-     * 
+     *
      * @param toolName - Name of the tool that failed
      * @param toolUseId - Tool use identifier
      * @param error - Error that occurred
      * @param latencyMs - Execution time before error
      * @param toolType - Type of tool ('local' or 'mcp')
      * @returns Tool result with error information
-     * 
+     *
      * @private
      */
     private handleToolError(
@@ -464,7 +446,7 @@ export class ToolExecutor {
         toolUseId: string,
         error: Error,
         latencyMs: number,
-        toolType: 'local' | 'mcp' = 'local'
+        toolType: 'local' | 'mcp' = 'local',
     ): ToolResult {
         // Log error with tool type context
         this.logger.error('Tool execution failed', {
@@ -506,13 +488,13 @@ export class ToolExecutor {
 
     /**
      * Lists all available tools including both local and MCP tools.
-     * 
+     *
      * Returns tool specifications in Bedrock API format for all tools
      * that can be invoked by the Agent. Local tools are included first,
      * followed by MCP tools.
-     * 
+     *
      * @returns Promise resolving to array of tool specifications
-     * 
+     *
      * @example
      * ```typescript
      * const allTools = await executor.listAllTools();
@@ -584,7 +566,7 @@ export class ToolExecutor {
 
     /**
      * Gets the list of registered local tool names.
-     * 
+     *
      * @returns Array of local tool names
      */
     getToolNames(): string[] {
@@ -593,7 +575,7 @@ export class ToolExecutor {
 
     /**
      * Checks if a tool is registered (local or MCP).
-     * 
+     *
      * @param toolName - Name of the tool to check
      * @returns True if tool is registered, false otherwise
      */
@@ -603,7 +585,7 @@ export class ToolExecutor {
 
     /**
      * Gets a local tool definition by name.
-     * 
+     *
      * @param toolName - Name of the tool
      * @returns Tool definition or undefined if not found
      */
@@ -613,7 +595,7 @@ export class ToolExecutor {
 
     /**
      * Gets the count of registered local tools.
-     * 
+     *
      * @returns Number of registered local tools
      */
     getToolCount(): number {

@@ -1,6 +1,6 @@
 /**
  * Retry logic utility for handling transient errors with exponential backoff.
- * 
+ *
  * This module provides retry functionality for operations that may fail due to
  * transient errors such as network issues, throttling, or temporary service unavailability.
  */
@@ -44,20 +44,16 @@ const DEFAULT_RETRY_CONFIG: RetryConfig = {
     maxRetries: 3,
     baseDelay: 100,
     maxDelay: 5000,
-    retryableErrors: [
-        ErrorCode.API_THROTTLED,
-        ErrorCode.API_TIMEOUT,
-        ErrorCode.API_INTERNAL_ERROR,
-    ],
+    retryableErrors: [ErrorCode.API_THROTTLED, ErrorCode.API_TIMEOUT, ErrorCode.API_INTERNAL_ERROR],
 };
 
 /**
  * Handler for retry logic with exponential backoff.
- * 
+ *
  * @example
  * ```typescript
  * const retryHandler = new RetryHandler(config, logger);
- * 
+ *
  * const result = await retryHandler.executeWithRetry(
  *   async () => await bedrockClient.converse(params),
  *   'BedrockAPICall'
@@ -70,7 +66,7 @@ export class RetryHandler {
 
     /**
      * Create a new RetryHandler instance.
-     * 
+     *
      * @param config - Retry configuration (merged with defaults)
      * @param logger - Logger instance for logging retry attempts
      */
@@ -81,12 +77,12 @@ export class RetryHandler {
 
     /**
      * Execute an async operation with retry logic.
-     * 
+     *
      * @param operation - The async operation to execute
      * @param context - Context string for logging (e.g., 'BedrockAPICall')
      * @returns Promise resolving to the operation result
      * @throws The last error if all retries are exhausted
-     * 
+     *
      * @example
      * ```typescript
      * const result = await retryHandler.executeWithRetry(
@@ -95,10 +91,7 @@ export class RetryHandler {
      * );
      * ```
      */
-    async executeWithRetry<T>(
-        operation: () => Promise<T>,
-        context: string
-    ): Promise<T> {
+    async executeWithRetry<T>(operation: () => Promise<T>, context: string): Promise<T> {
         let lastError: Error | undefined;
         let attempt = 0;
 
@@ -134,10 +127,13 @@ export class RetryHandler {
 
                 // Check if we've exhausted retries
                 if (attempt > this.config.maxRetries) {
-                    this.logger.error(`Operation failed after ${this.config.maxRetries} retries: ${context}`, {
-                        error: lastError,
-                        totalAttempts: attempt,
-                    });
+                    this.logger.error(
+                        `Operation failed after ${this.config.maxRetries} retries: ${context}`,
+                        {
+                            error: lastError,
+                            totalAttempts: attempt,
+                        },
+                    );
                     throw lastError;
                 }
 
@@ -159,7 +155,7 @@ export class RetryHandler {
 
     /**
      * Determine if an error should trigger a retry.
-     * 
+     *
      * @param error - The error to check
      * @param attempt - Current attempt number (1-indexed)
      * @returns true if the error is retryable and we haven't exceeded max retries
@@ -194,17 +190,17 @@ export class RetryHandler {
             'ProvisionedThroughputExceededException',
         ];
 
-        return retryableErrorNames.some(name =>
-            error.name === name || error.message.includes(name)
+        return retryableErrorNames.some(
+            (name) => error.name === name || error.message.includes(name),
         );
     }
 
     /**
      * Calculate delay for exponential backoff with jitter.
-     * 
+     *
      * Uses exponential backoff: delay = baseDelay * (2 ^ (attempt - 1))
      * Adds jitter to prevent thundering herd: delay * (0.5 + random(0, 0.5))
-     * 
+     *
      * @param attempt - Current attempt number (1-indexed)
      * @returns Delay in milliseconds
      */
@@ -225,10 +221,10 @@ export class RetryHandler {
 
     /**
      * Sleep for specified milliseconds.
-     * 
+     *
      * @param ms - Milliseconds to sleep
      */
     private sleep(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

@@ -1,6 +1,6 @@
 /**
  * Token estimation utilities for conversation history management.
- * 
+ *
  * This module provides approximate token counting for text and multimodal content.
  * The estimates are used for memory pruning decisions and are not exact tokenization
  * but sufficient for memory management purposes.
@@ -56,17 +56,17 @@ const DEFAULT_CONFIG: Required<TokenEstimationConfig> = {
 
 /**
  * Token estimation utility class.
- * 
+ *
  * Provides methods for estimating token counts in conversation history.
  * Uses configurable approximations for different content types.
- * 
+ *
  * @example
  * ```typescript
  * const estimator = new TokenEstimator();
- * 
+ *
  * const tokens = estimator.estimateText('Hello, world!');
  * console.log(`Estimated tokens: ${tokens}`);
- * 
+ *
  * const messageTokens = estimator.estimateMessage({
  *   role: 'user',
  *   content: [{ text: 'What is the weather?' }]
@@ -78,7 +78,7 @@ export class TokenEstimator {
 
     /**
      * Creates a new TokenEstimator instance.
-     * 
+     *
      * @param config - Optional configuration for token estimation
      */
     constructor(config?: TokenEstimationConfig) {
@@ -90,12 +90,12 @@ export class TokenEstimator {
 
     /**
      * Estimates token count for a text string.
-     * 
+     *
      * Uses a simple character-to-token ratio approximation.
-     * 
+     *
      * @param text - Text to estimate tokens for
      * @returns Estimated token count
-     * 
+     *
      * @example
      * ```typescript
      * const tokens = estimator.estimateText('Hello, world!');
@@ -108,12 +108,12 @@ export class TokenEstimator {
 
     /**
      * Estimates token count for a single content block.
-     * 
+     *
      * Handles all content types: text, image, document, video, tool use, and tool result.
-     * 
+     *
      * @param content - Content block to estimate tokens for
      * @returns Estimated token count
-     * 
+     *
      * @example
      * ```typescript
      * const tokens = estimator.estimateContentBlock({ text: 'Hello!' });
@@ -159,12 +159,12 @@ export class TokenEstimator {
 
     /**
      * Estimates token count for a single message.
-     * 
+     *
      * Includes message overhead and all content blocks.
-     * 
+     *
      * @param message - Message to estimate tokens for
      * @returns Estimated token count
-     * 
+     *
      * @example
      * ```typescript
      * const tokens = estimator.estimateMessage({
@@ -185,12 +185,12 @@ export class TokenEstimator {
 
     /**
      * Estimates total token count for an array of messages.
-     * 
+     *
      * This is the primary method used for conversation history token estimation.
-     * 
+     *
      * @param messages - Array of messages to estimate tokens for
      * @returns Total estimated token count
-     * 
+     *
      * @example
      * ```typescript
      * const history = [
@@ -213,11 +213,11 @@ export class TokenEstimator {
 
     /**
      * Updates the token estimation configuration.
-     * 
+     *
      * Allows runtime adjustment of estimation parameters.
-     * 
+     *
      * @param config - Partial configuration to update
-     * 
+     *
      * @example
      * ```typescript
      * estimator.updateConfig({ charsPerToken: 3 });
@@ -229,7 +229,7 @@ export class TokenEstimator {
 
     /**
      * Gets the current token estimation configuration.
-     * 
+     *
      * @returns Current configuration
      */
     getConfig(): Readonly<Required<TokenEstimationConfig>> {
@@ -239,11 +239,11 @@ export class TokenEstimator {
 
 /**
  * Creates a default token estimator instance.
- * 
+ *
  * Convenience function for creating an estimator with default configuration.
- * 
+ *
  * @returns TokenEstimator instance with default configuration
- * 
+ *
  * @example
  * ```typescript
  * const estimator = createTokenEstimator();
@@ -256,12 +256,12 @@ export function createTokenEstimator(config?: TokenEstimationConfig): TokenEstim
 
 /**
  * Estimates token count for text using default configuration.
- * 
+ *
  * Convenience function for quick token estimation without creating an instance.
- * 
+ *
  * @param text - Text to estimate tokens for
  * @returns Estimated token count
- * 
+ *
  * @example
  * ```typescript
  * const tokens = estimateTextTokens('Hello, world!');
@@ -273,12 +273,12 @@ export function estimateTextTokens(text: string): number {
 
 /**
  * Estimates token count for messages using default configuration.
- * 
+ *
  * Convenience function for quick message token estimation without creating an instance.
- * 
+ *
  * @param messages - Messages to estimate tokens for
  * @returns Estimated token count
- * 
+ *
  * @example
  * ```typescript
  * const tokens = estimateMessageTokens([

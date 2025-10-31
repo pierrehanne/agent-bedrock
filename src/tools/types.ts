@@ -1,13 +1,13 @@
 /**
  * Tool-related type definitions for the Agent Bedrock.
- * 
+ *
  * This module contains interfaces and types for defining and executing
  * tools that Agents can invoke during conversations.
  */
 
 /**
  * Definition of a tool that can be invoked by the Agent.
- * 
+ *
  * @example
  * ```typescript
  * const weatherTool: ToolDefinition = {
@@ -46,7 +46,7 @@ export interface ToolDefinition {
 
     /**
      * Async function that executes the tool logic.
-     * 
+     *
      * @param input - Tool input matching the inputSchema
      * @returns Promise resolving to tool output
      */
@@ -152,9 +152,9 @@ export interface ToolSpec {
  * Tool choice strategy for model tool selection.
  */
 export type ToolChoice =
-    | { auto: Record<string, never> }      // Model decides when to use tools
-    | { any: Record<string, never> }       // Model must use a tool
-    | { tool: { name: string } };  // Model must use specific tool
+    | { auto: Record<string, never> } // Model decides when to use tools
+    | { any: Record<string, never> } // Model must use a tool
+    | { tool: { name: string } }; // Model must use specific tool
 
 /**
  * Tool use request from the model.

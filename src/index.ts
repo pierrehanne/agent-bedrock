@@ -1,10 +1,10 @@
 /**
  * Agent Bedrock
- * 
+ *
  * A JavaScript framework for building conversational AI agents with AWS Bedrock.
  * This framework provides a simplified interface for creating agents that leverage
  * the Bedrock Runtime ConverseStream API with built-in observability through AWS Powertools.
- * 
+ *
  * @packageDocumentation
  */
 
@@ -65,11 +65,7 @@ export type {
 
 export { McpClientManager } from './mcp/client-manager.js';
 export { McpServerConnection } from './mcp/connection.js';
-export {
-    filterTools,
-    hasFilterRules,
-    validateToolFilter,
-} from './mcp/filters.js';
+export { filterTools, hasFilterRules, validateToolFilter } from './mcp/filters.js';
 export type { FilterResult } from './mcp/filters.js';
 
 // Stream types
@@ -141,9 +137,7 @@ export {
     estimateMessageTokens,
 } from './utils/tokens.js';
 
-export type {
-    TokenEstimationConfig,
-} from './utils/tokens.js';
+export type { TokenEstimationConfig } from './utils/tokens.js';
 
 // Agent class - main interface
 export { Agent } from './agent.js';

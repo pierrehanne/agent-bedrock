@@ -1,6 +1,6 @@
 /**
  * Configuration type definitions for the Agent Bedrock
- * 
+ *
  * This module contains all configuration interfaces and types used to
  * configure and customize Agent behavior.
  */
@@ -13,7 +13,7 @@ import type { McpServerConfig } from '../mcp/types.js';
 
 /**
  * Main configuration interface for creating an Agent instance.
- * 
+ *
  * @example
  * ```typescript
  * const config: AgentConfig = {
@@ -35,7 +35,7 @@ export interface AgentConfig {
 
     /**
      * AWS Bedrock model identifier.
-     * 
+     *
      * @example 'anthropic.claude-3-sonnet-20240229-v1:0'
      * @example 'anthropic.claude-3-haiku-20240307-v1:0'
      */
@@ -50,7 +50,7 @@ export interface AgentConfig {
     /**
      * AWS region for Bedrock API calls.
      * Only used if bedrockClient is not provided.
-     * 
+     *
      * @default Uses AWS SDK default region resolution
      */
     region?: string;
@@ -63,14 +63,14 @@ export interface AgentConfig {
 
     /**
      * Enable CloudWatch metrics emission.
-     * 
+     *
      * @default false
      */
     enableMetrics?: boolean;
 
     /**
      * Enable AWS X-Ray tracing.
-     * 
+     *
      * @default false
      */
     enableTracing?: boolean;
@@ -87,7 +87,7 @@ export interface AgentConfig {
 
     /**
      * Enable streaming responses using ConverseStream API.
-     * 
+     *
      * @default true
      */
     streaming?: boolean;
@@ -110,7 +110,7 @@ export interface AgentConfig {
     /**
      * System prompts to guide model behavior.
      * These prompts are included in all conversation turns.
-     * 
+     *
      * @internal
      */
     systemPrompts?: string[];
@@ -118,7 +118,7 @@ export interface AgentConfig {
     /**
      * MCP (Model Context Protocol) server configurations.
      * Allows connecting to external MCP servers that provide additional tools and resources.
-     * 
+     *
      * @example
      * ```typescript
      * mcpServers: [{
@@ -142,7 +142,7 @@ export interface ModelConfig {
     /**
      * Controls randomness in generation.
      * Higher values make output more random, lower values more deterministic.
-     * 
+     *
      * @minimum 0
      * @maximum 1
      * @default Model-specific default
@@ -151,7 +151,7 @@ export interface ModelConfig {
 
     /**
      * Maximum number of tokens to generate in the response.
-     * 
+     *
      * @minimum 1
      * @maximum Model-specific maximum
      */
@@ -160,7 +160,7 @@ export interface ModelConfig {
     /**
      * Nucleus sampling parameter.
      * Controls diversity via cumulative probability.
-     * 
+     *
      * @minimum 0
      * @maximum 1
      * @default Model-specific default
@@ -169,7 +169,7 @@ export interface ModelConfig {
 
     /**
      * Sequences that will stop generation when encountered.
-     * 
+     *
      * @maxItems Model-specific limit
      */
     stopSequences?: string[];
@@ -191,7 +191,7 @@ export interface GuardrailConfig {
 
     /**
      * Enable guardrail trace information in responses.
-     * 
+     *
      * @default false
      */
     trace?: boolean;
@@ -219,7 +219,7 @@ export interface ShortTermMemoryConfig {
     /**
      * Maximum number of messages to retain in memory.
      * Older messages are pruned when limit is exceeded.
-     * 
+     *
      * @minimum 1
      * @default 50
      */
@@ -228,7 +228,7 @@ export interface ShortTermMemoryConfig {
     /**
      * Maximum total tokens to retain in memory.
      * Messages are pruned when token limit is exceeded.
-     * 
+     *
      * @minimum 1
      * @default 4000
      */
@@ -241,7 +241,7 @@ export interface ShortTermMemoryConfig {
 export interface LongTermMemoryConfig {
     /**
      * Callback to fetch conversation history from persistent storage.
-     * 
+     *
      * @param sessionId - Unique identifier for the conversation session
      * @returns Promise resolving to array of messages
      */
@@ -249,7 +249,7 @@ export interface LongTermMemoryConfig {
 
     /**
      * Callback to save conversation history to persistent storage.
-     * 
+     *
      * @param sessionId - Unique identifier for the conversation session
      * @param messages - Array of messages to persist
      * @returns Promise resolving when save is complete
@@ -263,7 +263,7 @@ export interface LongTermMemoryConfig {
 export interface RetryConfig {
     /**
      * Maximum number of retry attempts.
-     * 
+     *
      * @minimum 0
      * @default 3
      */
@@ -271,7 +271,7 @@ export interface RetryConfig {
 
     /**
      * Base delay in milliseconds for exponential backoff.
-     * 
+     *
      * @minimum 0
      * @default 100
      */
@@ -279,7 +279,7 @@ export interface RetryConfig {
 
     /**
      * Maximum delay in milliseconds between retries.
-     * 
+     *
      * @minimum 0
      * @default 5000
      */

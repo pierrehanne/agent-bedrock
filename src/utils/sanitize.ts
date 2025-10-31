@@ -1,6 +1,6 @@
 /**
  * Log sanitization utilities
- * 
+ *
  * This module provides utilities for sanitizing log data to remove
  * Personally Identifiable Information (PII) and sensitive data.
  */
@@ -64,42 +64,42 @@ const SENSITIVE_FIELDS = new Set([
 export interface SanitizeConfig {
     /**
      * Whether to redact email addresses.
-     * 
+     *
      * @default true
      */
     redactEmails?: boolean;
 
     /**
      * Whether to redact phone numbers.
-     * 
+     *
      * @default true
      */
     redactPhones?: boolean;
 
     /**
      * Whether to redact credit card numbers.
-     * 
+     *
      * @default true
      */
     redactCreditCards?: boolean;
 
     /**
      * Whether to redact SSNs.
-     * 
+     *
      * @default true
      */
     redactSSNs?: boolean;
 
     /**
      * Whether to redact IP addresses.
-     * 
+     *
      * @default false
      */
     redactIPs?: boolean;
 
     /**
      * Whether to redact AWS credentials.
-     * 
+     *
      * @default true
      */
     redactAWSCredentials?: boolean;
@@ -116,7 +116,7 @@ export interface SanitizeConfig {
 
     /**
      * Replacement text for redacted values.
-     * 
+     *
      * @default '[REDACTED]'
      */
     replacementText?: string;
@@ -124,11 +124,11 @@ export interface SanitizeConfig {
 
 /**
  * Sanitizes a string by removing PII and sensitive data.
- * 
+ *
  * @param text - Text to sanitize
  * @param config - Sanitization configuration
  * @returns Sanitized text
- * 
+ *
  * @example
  * ```typescript
  * const sanitized = sanitizeString(
@@ -138,10 +138,7 @@ export interface SanitizeConfig {
  * // Result: 'Contact me at [REDACTED] or [REDACTED]'
  * ```
  */
-export function sanitizeString(
-    text: string,
-    config: SanitizeConfig = {}
-): string {
+export function sanitizeString(text: string, config: SanitizeConfig = {}): string {
     const {
         redactEmails = true,
         redactPhones = true,
@@ -187,11 +184,11 @@ export function sanitizeString(
 /**
  * Sanitizes an object by removing PII and sensitive data.
  * Recursively processes nested objects and arrays.
- * 
+ *
  * @param obj - Object to sanitize
  * @param config - Sanitization configuration
  * @returns Sanitized object
- * 
+ *
  * @example
  * ```typescript
  * const sanitized = sanitizeObject({
@@ -204,20 +201,11 @@ export function sanitizeString(
  * // Result: { user: { name: 'John Doe', email: '[REDACTED]', password: '[REDACTED]' } }
  * ```
  */
-export function sanitizeObject(
-    obj: any,
-    config: SanitizeConfig = {}
-): any {
-    const {
-        customSensitiveFields = [],
-        replacementText = '[REDACTED]',
-    } = config;
+export function sanitizeObject(obj: any, config: SanitizeConfig = {}): any {
+    const { customSensitiveFields = [], replacementText = '[REDACTED]' } = config;
 
     // Combine default and custom sensitive fields
-    const allSensitiveFields = new Set([
-        ...SENSITIVE_FIELDS,
-        ...customSensitiveFields,
-    ]);
+    const allSensitiveFields = new Set([...SENSITIVE_FIELDS, ...customSensitiveFields]);
 
     function sanitizeValue(value: any, key?: string): any {
         // Check if the key is sensitive
@@ -254,15 +242,12 @@ export function sanitizeObject(
 
 /**
  * Checks if a field name is sensitive.
- * 
+ *
  * @param fieldName - Field name to check
  * @param sensitiveFields - Set of sensitive field names
  * @returns True if the field is sensitive
  */
-function isSensitiveField(
-    fieldName: string,
-    sensitiveFields: Set<string>
-): boolean {
+function isSensitiveField(fieldName: string, sensitiveFields: Set<string>): boolean {
     const lowerFieldName = fieldName.toLowerCase();
 
     // Check exact match
@@ -283,11 +268,11 @@ function isSensitiveField(
 /**
  * Sanitizes log data before logging.
  * Handles both string and object inputs.
- * 
+ *
  * @param data - Data to sanitize
  * @param config - Sanitization configuration
  * @returns Sanitized data
- * 
+ *
  * @example
  * ```typescript
  * logger.info('User data', sanitizeLogData({
@@ -296,10 +281,7 @@ function isSensitiveField(
  * }));
  * ```
  */
-export function sanitizeLogData(
-    data: any,
-    config: SanitizeConfig = {}
-): any {
+export function sanitizeLogData(data: any, config: SanitizeConfig = {}): any {
     if (typeof data === 'string') {
         return sanitizeString(data, config);
     }
@@ -314,10 +296,10 @@ export function sanitizeLogData(
 /**
  * Creates a sanitization function with pre-configured options.
  * Useful for creating a consistent sanitizer across the application.
- * 
+ *
  * @param config - Sanitization configuration
  * @returns Sanitization function
- * 
+ *
  * @example
  * ```typescript
  * const sanitize = createSanitizer({
@@ -325,12 +307,10 @@ export function sanitizeLogData(
  *   redactPhones: true,
  *   customSensitiveFields: ['userId', 'accountId']
  * });
- * 
+ *
  * logger.info('Data', sanitize(userData));
  * ```
  */
-export function createSanitizer(
-    config: SanitizeConfig = {}
-): (data: any) => any {
+export function createSanitizer(config: SanitizeConfig = {}): (data: any) => any {
     return (data: any) => sanitizeLogData(data, config);
 }

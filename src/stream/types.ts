@@ -1,6 +1,6 @@
 /**
  * Stream-related type definitions for the Agent Bedrock.
- * 
+ *
  * This module contains interfaces and types for handling streaming
  * responses from the Bedrock ConverseStream API.
  */
@@ -77,9 +77,7 @@ export interface ContentBlockDeltaEvent {
 /**
  * Content delta for incremental updates.
  */
-export type ContentDelta =
-    | { text: string }
-    | { toolUse: { input: string } };
+export type ContentDelta = { text: string } | { toolUse: { input: string } };
 
 /**
  * Event emitted when a content block completes.
@@ -108,7 +106,13 @@ export interface MessageStopEvent {
     /**
      * Reason why generation stopped.
      */
-    stopReason: 'end_turn' | 'max_tokens' | 'stop_sequence' | 'tool_use' | 'content_filtered' | 'guardrail_intervened';
+    stopReason:
+        | 'end_turn'
+        | 'max_tokens'
+        | 'stop_sequence'
+        | 'tool_use'
+        | 'content_filtered'
+        | 'guardrail_intervened';
 
     /**
      * Additional stop reason details.
@@ -172,14 +176,14 @@ export interface ErrorEvent {
 export interface StreamHandlerConfig {
     /**
      * Enable detailed logging of stream events.
-     * 
+     *
      * @default false
      */
     enableDebugLogging?: boolean;
 
     /**
      * Timeout in milliseconds for stream operations.
-     * 
+     *
      * @default 300000 (5 minutes)
      */
     streamTimeout?: number;

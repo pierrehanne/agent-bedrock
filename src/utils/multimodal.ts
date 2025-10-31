@@ -1,6 +1,6 @@
 /**
  * Multimodal content helper utilities.
- * 
+ *
  * This module provides helper functions for creating multimodal content blocks
  * including images, documents, and videos from various sources.
  */
@@ -133,11 +133,11 @@ export interface VideoFromS3Options {
 
 /**
  * Creates an ImageContent block from raw bytes.
- * 
+ *
  * @param options - Image creation options
  * @returns ImageContent block
  * @throws {ValidationError} If options are invalid
- * 
+ *
  * @example
  * ```typescript
  * const imageContent = createImageFromBytes({
@@ -150,25 +150,22 @@ export function createImageFromBytes(options: ImageFromBytesOptions): ImageConte
     // Validate format
     const validFormats = ['png', 'jpeg', 'gif', 'webp'];
     if (!validFormats.includes(options.format)) {
-        throw new ValidationError(
-            `Image format must be one of: ${validFormats.join(', ')}`,
-            { field: 'format', value: options.format }
-        );
+        throw new ValidationError(`Image format must be one of: ${validFormats.join(', ')}`, {
+            field: 'format',
+            value: options.format,
+        });
     }
 
     // Validate bytes
     if (!(options.bytes instanceof Uint8Array)) {
-        throw new ValidationError(
-            'Image bytes must be a Uint8Array',
-            { field: 'bytes', value: typeof options.bytes }
-        );
+        throw new ValidationError('Image bytes must be a Uint8Array', {
+            field: 'bytes',
+            value: typeof options.bytes,
+        });
     }
 
     if (options.bytes.length === 0) {
-        throw new ValidationError(
-            'Image bytes cannot be empty',
-            { field: 'bytes' }
-        );
+        throw new ValidationError('Image bytes cannot be empty', { field: 'bytes' });
     }
 
     return {
@@ -183,18 +180,18 @@ export function createImageFromBytes(options: ImageFromBytesOptions): ImageConte
 
 /**
  * Creates an ImageContent block from an S3 URI.
- * 
+ *
  * @param options - Image creation options
  * @returns ImageContent block
  * @throws {ValidationError} If options are invalid
- * 
+ *
  * @example
  * ```typescript
  * const imageContent = createImageFromS3({
  *   format: 'jpeg',
  *   uri: 's3://my-bucket/images/photo.jpg'
  * });
- * 
+ *
  * // With cross-account access
  * const imageContent = createImageFromS3({
  *   format: 'png',
@@ -207,10 +204,10 @@ export function createImageFromS3(options: ImageFromS3Options): ImageContent {
     // Validate format
     const validFormats = ['png', 'jpeg', 'gif', 'webp'];
     if (!validFormats.includes(options.format)) {
-        throw new ValidationError(
-            `Image format must be one of: ${validFormats.join(', ')}`,
-            { field: 'format', value: options.format }
-        );
+        throw new ValidationError(`Image format must be one of: ${validFormats.join(', ')}`, {
+            field: 'format',
+            value: options.format,
+        });
     }
 
     // Validate and create S3 location
@@ -228,11 +225,11 @@ export function createImageFromS3(options: ImageFromS3Options): ImageContent {
 
 /**
  * Creates a DocumentContent block from raw bytes.
- * 
+ *
  * @param options - Document creation options
  * @returns DocumentContent block
  * @throws {ValidationError} If options are invalid
- * 
+ *
  * @example
  * ```typescript
  * const docContent = createDocumentFromBytes({
@@ -246,40 +243,36 @@ export function createDocumentFromBytes(options: DocumentFromBytesOptions): Docu
     // Validate format
     const validFormats = ['pdf', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'html', 'txt', 'md'];
     if (!validFormats.includes(options.format)) {
-        throw new ValidationError(
-            `Document format must be one of: ${validFormats.join(', ')}`,
-            { field: 'format', value: options.format }
-        );
+        throw new ValidationError(`Document format must be one of: ${validFormats.join(', ')}`, {
+            field: 'format',
+            value: options.format,
+        });
     }
 
     // Validate name
     if (!options.name || typeof options.name !== 'string') {
-        throw new ValidationError(
-            'Document name is required and must be a non-empty string',
-            { field: 'name', value: options.name }
-        );
+        throw new ValidationError('Document name is required and must be a non-empty string', {
+            field: 'name',
+            value: options.name,
+        });
     }
 
     if (options.name.trim().length === 0) {
-        throw new ValidationError(
-            'Document name cannot be empty or whitespace only',
-            { field: 'name' }
-        );
+        throw new ValidationError('Document name cannot be empty or whitespace only', {
+            field: 'name',
+        });
     }
 
     // Validate bytes
     if (!(options.bytes instanceof Uint8Array)) {
-        throw new ValidationError(
-            'Document bytes must be a Uint8Array',
-            { field: 'bytes', value: typeof options.bytes }
-        );
+        throw new ValidationError('Document bytes must be a Uint8Array', {
+            field: 'bytes',
+            value: typeof options.bytes,
+        });
     }
 
     if (options.bytes.length === 0) {
-        throw new ValidationError(
-            'Document bytes cannot be empty',
-            { field: 'bytes' }
-        );
+        throw new ValidationError('Document bytes cannot be empty', { field: 'bytes' });
     }
 
     return {
@@ -295,11 +288,11 @@ export function createDocumentFromBytes(options: DocumentFromBytesOptions): Docu
 
 /**
  * Creates a DocumentContent block from an S3 URI.
- * 
+ *
  * @param options - Document creation options
  * @returns DocumentContent block
  * @throws {ValidationError} If options are invalid
- * 
+ *
  * @example
  * ```typescript
  * const docContent = createDocumentFromS3({
@@ -307,7 +300,7 @@ export function createDocumentFromBytes(options: DocumentFromBytesOptions): Docu
  *   name: 'report.pdf',
  *   uri: 's3://my-bucket/documents/report.pdf'
  * });
- * 
+ *
  * // With cross-account access
  * const docContent = createDocumentFromS3({
  *   format: 'xlsx',
@@ -321,25 +314,24 @@ export function createDocumentFromS3(options: DocumentFromS3Options): DocumentCo
     // Validate format
     const validFormats = ['pdf', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'html', 'txt', 'md'];
     if (!validFormats.includes(options.format)) {
-        throw new ValidationError(
-            `Document format must be one of: ${validFormats.join(', ')}`,
-            { field: 'format', value: options.format }
-        );
+        throw new ValidationError(`Document format must be one of: ${validFormats.join(', ')}`, {
+            field: 'format',
+            value: options.format,
+        });
     }
 
     // Validate name
     if (!options.name || typeof options.name !== 'string') {
-        throw new ValidationError(
-            'Document name is required and must be a non-empty string',
-            { field: 'name', value: options.name }
-        );
+        throw new ValidationError('Document name is required and must be a non-empty string', {
+            field: 'name',
+            value: options.name,
+        });
     }
 
     if (options.name.trim().length === 0) {
-        throw new ValidationError(
-            'Document name cannot be empty or whitespace only',
-            { field: 'name' }
-        );
+        throw new ValidationError('Document name cannot be empty or whitespace only', {
+            field: 'name',
+        });
     }
 
     // Validate and create S3 location
@@ -358,11 +350,11 @@ export function createDocumentFromS3(options: DocumentFromS3Options): DocumentCo
 
 /**
  * Creates a VideoContent block from raw bytes.
- * 
+ *
  * @param options - Video creation options
  * @returns VideoContent block
  * @throws {ValidationError} If options are invalid
- * 
+ *
  * @example
  * ```typescript
  * const videoContent = createVideoFromBytes({
@@ -375,25 +367,22 @@ export function createVideoFromBytes(options: VideoFromBytesOptions): VideoConte
     // Validate format
     const validFormats = ['mp4', 'mov', 'avi', 'flv', 'mkv', 'webm'];
     if (!validFormats.includes(options.format)) {
-        throw new ValidationError(
-            `Video format must be one of: ${validFormats.join(', ')}`,
-            { field: 'format', value: options.format }
-        );
+        throw new ValidationError(`Video format must be one of: ${validFormats.join(', ')}`, {
+            field: 'format',
+            value: options.format,
+        });
     }
 
     // Validate bytes
     if (!(options.bytes instanceof Uint8Array)) {
-        throw new ValidationError(
-            'Video bytes must be a Uint8Array',
-            { field: 'bytes', value: typeof options.bytes }
-        );
+        throw new ValidationError('Video bytes must be a Uint8Array', {
+            field: 'bytes',
+            value: typeof options.bytes,
+        });
     }
 
     if (options.bytes.length === 0) {
-        throw new ValidationError(
-            'Video bytes cannot be empty',
-            { field: 'bytes' }
-        );
+        throw new ValidationError('Video bytes cannot be empty', { field: 'bytes' });
     }
 
     return {
@@ -408,18 +397,18 @@ export function createVideoFromBytes(options: VideoFromBytesOptions): VideoConte
 
 /**
  * Creates a VideoContent block from an S3 URI.
- * 
+ *
  * @param options - Video creation options
  * @returns VideoContent block
  * @throws {ValidationError} If options are invalid
- * 
+ *
  * @example
  * ```typescript
  * const videoContent = createVideoFromS3({
  *   format: 'mp4',
  *   uri: 's3://my-bucket/videos/demo.mp4'
  * });
- * 
+ *
  * // With cross-account access
  * const videoContent = createVideoFromS3({
  *   format: 'webm',
@@ -432,10 +421,10 @@ export function createVideoFromS3(options: VideoFromS3Options): VideoContent {
     // Validate format
     const validFormats = ['mp4', 'mov', 'avi', 'flv', 'mkv', 'webm'];
     if (!validFormats.includes(options.format)) {
-        throw new ValidationError(
-            `Video format must be one of: ${validFormats.join(', ')}`,
-            { field: 'format', value: options.format }
-        );
+        throw new ValidationError(`Video format must be one of: ${validFormats.join(', ')}`, {
+            field: 'format',
+            value: options.format,
+        });
     }
 
     // Validate and create S3 location
@@ -453,7 +442,7 @@ export function createVideoFromS3(options: VideoFromS3Options): VideoContent {
 
 /**
  * Creates and validates an S3Location object.
- * 
+ *
  * @param uri - S3 URI in format s3://bucket-name/key
  * @param bucketOwner - Optional AWS account ID of the bucket owner
  * @returns S3Location object
@@ -463,48 +452,44 @@ export function createVideoFromS3(options: VideoFromS3Options): VideoContent {
 function createS3Location(uri: string, bucketOwner?: string): S3Location {
     // Validate URI
     if (!uri || typeof uri !== 'string') {
-        throw new ValidationError(
-            'S3 URI is required and must be a non-empty string',
-            { field: 'uri', value: uri }
-        );
+        throw new ValidationError('S3 URI is required and must be a non-empty string', {
+            field: 'uri',
+            value: uri,
+        });
     }
 
     if (!uri.startsWith('s3://')) {
-        throw new ValidationError(
-            'S3 URI must start with "s3://"',
-            { field: 'uri', value: uri }
-        );
+        throw new ValidationError('S3 URI must start with "s3://"', { field: 'uri', value: uri });
     }
 
     if (uri.length <= 5) {
-        throw new ValidationError(
-            'S3 URI must include bucket and key',
-            { field: 'uri', value: uri }
-        );
+        throw new ValidationError('S3 URI must include bucket and key', {
+            field: 'uri',
+            value: uri,
+        });
     }
 
     // Validate bucket owner if provided
     if (bucketOwner !== undefined) {
         if (typeof bucketOwner !== 'string') {
-            throw new ValidationError(
-                'Bucket owner must be a string',
-                { field: 'bucketOwner', value: typeof bucketOwner }
-            );
+            throw new ValidationError('Bucket owner must be a string', {
+                field: 'bucketOwner',
+                value: typeof bucketOwner,
+            });
         }
 
         if (bucketOwner.trim().length === 0) {
-            throw new ValidationError(
-                'Bucket owner cannot be empty or whitespace only',
-                { field: 'bucketOwner' }
-            );
+            throw new ValidationError('Bucket owner cannot be empty or whitespace only', {
+                field: 'bucketOwner',
+            });
         }
 
         // Validate AWS account ID format (12 digits)
         if (!/^\d{12}$/.test(bucketOwner)) {
-            throw new ValidationError(
-                'Bucket owner must be a 12-digit AWS account ID',
-                { field: 'bucketOwner', value: bucketOwner }
-            );
+            throw new ValidationError('Bucket owner must be a 12-digit AWS account ID', {
+                field: 'bucketOwner',
+                value: bucketOwner,
+            });
         }
     }
 

@@ -1,6 +1,6 @@
 /**
  * Stream handler for managing Bedrock ConverseStream API interactions.
- * 
+ *
  * This module provides the StreamHandler class that processes streaming
  * responses from the Bedrock API and transforms them into framework events.
  */
@@ -13,10 +13,7 @@ import type {
 import { ConverseStreamCommand } from '@aws-sdk/client-bedrock-runtime';
 import type { Logger } from '@aws-lambda-powertools/logger';
 import type { Tracer } from '@aws-lambda-powertools/tracer';
-import {
-    StreamError,
-    ErrorCode,
-} from '../errors/index.js';
+import { StreamError, ErrorCode } from '../errors/index.js';
 import type {
     StreamEvent,
     MessageStartEvent,
@@ -33,14 +30,14 @@ import { TracerHelper } from '../observability/tracer.js';
 
 /**
  * StreamHandler manages streaming interactions with the Bedrock ConverseStream API.
- * 
+ *
  * It processes the stream of events from Bedrock and transforms them into
  * framework-specific events that can be consumed by the Agent class.
- * 
+ *
  * @example
  * ```typescript
  * const handler = new StreamHandler(bedrockClient, logger, tracer);
- * 
+ *
  * for await (const event of handler.handleStream(request)) {
  *   if (event.type === 'contentBlockDelta') {
  *     console.log(event.delta.text);
@@ -56,7 +53,7 @@ export class StreamHandler {
         private bedrockClient: BedrockRuntimeClient,
         private logger: Logger,
         tracer: Tracer,
-        config?: StreamHandlerConfig
+        config?: StreamHandlerConfig,
     ) {
         this.tracerHelper = new TracerHelper(tracer);
         this.config = {
@@ -67,29 +64,29 @@ export class StreamHandler {
 
     /**
      * Handles a streaming request to the Bedrock API.
-     * 
+     *
      * This async generator yields stream events as they arrive from the API.
      * It automatically handles event transformation, error handling, and
      * observability integration.
-     * 
+     *
      * @param request - Bedrock ConverseStream API request
      * @yields StreamEvent objects as they are received
      * @throws StreamError if the stream fails or times out
-     * 
+     *
      * @example
      * ```typescript
      * const request = {
      *   modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
      *   messages: [{ role: 'user', content: [{ text: 'Hello' }] }]
      * };
-     * 
+     *
      * for await (const event of handler.handleStream(request)) {
      *   console.log(event);
      * }
      * ```
      */
     async *handleStream(
-        request: ConverseStreamCommandInput
+        request: ConverseStreamCommandInput,
     ): AsyncGenerator<StreamEvent, void, unknown> {
         this.logger.debug('Starting stream request', {
             modelId: request.modelId,
@@ -102,25 +99,22 @@ export class StreamHandler {
 
         try {
             // Execute the stream request within a tracer subsegment
-            yield* await this.tracerHelper.withSubsegment(
-                'BedrockConverseStream',
-                async () => {
-                    this.tracerHelper.addAnnotation('modelId', request.modelId ?? 'unknown');
-                    this.tracerHelper.addAnnotation('streaming', true);
+            yield* await this.tracerHelper.withSubsegment('BedrockConverseStream', async () => {
+                this.tracerHelper.addAnnotation('modelId', request.modelId ?? 'unknown');
+                this.tracerHelper.addAnnotation('streaming', true);
 
-                    const command = new ConverseStreamCommand(request);
-                    const response = await this.bedrockClient.send(command);
+                const command = new ConverseStreamCommand(request);
+                const response = await this.bedrockClient.send(command);
 
-                    if (!response.stream) {
-                        throw new StreamError(
-                            'No stream returned from Bedrock API',
-                            ErrorCode.STREAM_ERROR
-                        );
-                    }
-
-                    return this.processStream(response.stream, streamStartTime);
+                if (!response.stream) {
+                    throw new StreamError(
+                        'No stream returned from Bedrock API',
+                        ErrorCode.STREAM_ERROR,
+                    );
                 }
-            );
+
+                return this.processStream(response.stream, streamStartTime);
+            });
 
             this.logger.info('Stream completed successfully', {
                 eventCount,
@@ -133,14 +127,14 @@ export class StreamHandler {
 
     /**
      * Processes the stream of events from Bedrock.
-     * 
+     *
      * @param stream - Async iterable stream from Bedrock
      * @param startTime - Stream start timestamp for metrics
      * @yields Transformed StreamEvent objects
      */
     private async *processStream(
         stream: AsyncIterable<ConverseStreamOutput>,
-        startTime: number
+        startTime: number,
     ): AsyncGenerator<StreamEvent, void, unknown> {
         let eventCount = 0;
 
@@ -180,7 +174,7 @@ export class StreamHandler {
     /**
      * Processes a single stream event from Bedrock and transforms it
      * into a framework StreamEvent.
-     * 
+     *
      * @param event - Raw event from Bedrock ConverseStream API
      * @returns Transformed StreamEvent or null if event should be skipped
      */
@@ -257,7 +251,7 @@ export class StreamHandler {
 
                 return {
                     type: 'messageStop',
-                    stopReason: stopReason as any ?? 'end_turn',
+                    stopReason: (stopReason as any) ?? 'end_turn',
                     additionalModelResponseFields,
                 } as MessageStopEvent;
             }
@@ -293,7 +287,7 @@ export class StreamHandler {
                     event.internalServerException.message ?? 'Internal server error',
                     ErrorCode.API_INTERNAL_ERROR,
                     undefined,
-                    { exception: event.internalServerException }
+                    { exception: event.internalServerException },
                 );
             }
 
@@ -303,7 +297,7 @@ export class StreamHandler {
                     event.modelStreamErrorException.message ?? 'Model stream error',
                     ErrorCode.STREAM_ERROR,
                     undefined,
-                    { exception: event.modelStreamErrorException }
+                    { exception: event.modelStreamErrorException },
                 );
             }
 
@@ -313,7 +307,7 @@ export class StreamHandler {
                     event.throttlingException.message ?? 'Request throttled',
                     ErrorCode.API_THROTTLED,
                     undefined,
-                    { exception: event.throttlingException }
+                    { exception: event.throttlingException },
                 );
             }
 
@@ -323,7 +317,7 @@ export class StreamHandler {
                     event.validationException.message ?? 'Validation error',
                     ErrorCode.VALIDATION_ERROR,
                     undefined,
-                    { exception: event.validationException }
+                    { exception: event.validationException },
                 );
             }
 
@@ -338,7 +332,7 @@ export class StreamHandler {
                 'Failed to process stream event',
                 ErrorCode.STREAM_PARSE_ERROR,
                 error as Error,
-                { event }
+                { event },
             );
         }
     }
@@ -346,7 +340,7 @@ export class StreamHandler {
     /**
      * Transforms the content block start data from Bedrock format
      * to framework format.
-     * 
+     *
      * @param start - Content block start data from Bedrock
      * @returns Partial ContentBlock in framework format
      */
@@ -372,7 +366,7 @@ export class StreamHandler {
 
     /**
      * Transforms delta data from Bedrock format to framework format.
-     * 
+     *
      * @param delta - Delta data from Bedrock
      * @returns Transformed delta object
      */
@@ -400,14 +394,15 @@ export class StreamHandler {
 
     /**
      * Creates an error event from an Error object.
-     * 
+     *
      * @param error - Error that occurred
      * @returns ErrorEvent object
      */
     private createErrorEvent(error: Error): ErrorEvent {
-        const streamError = error instanceof StreamError
-            ? error
-            : new StreamError('Stream processing failed', ErrorCode.STREAM_ERROR, error);
+        const streamError =
+            error instanceof StreamError
+                ? error
+                : new StreamError('Stream processing failed', ErrorCode.STREAM_ERROR, error);
 
         return {
             type: 'error',
@@ -419,7 +414,7 @@ export class StreamHandler {
 
     /**
      * Handles stream errors by logging and throwing appropriate exceptions.
-     * 
+     *
      * @param error - Error that occurred during streaming
      * @throws StreamError with appropriate error code and context
      */
@@ -442,10 +437,6 @@ export class StreamHandler {
         }
 
         // Wrap other errors in StreamError
-        throw new StreamError(
-            `Stream failed: ${error.message}`,
-            ErrorCode.STREAM_ERROR,
-            error
-        );
+        throw new StreamError(`Stream failed: ${error.message}`, ErrorCode.STREAM_ERROR, error);
     }
 }

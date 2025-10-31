@@ -1,6 +1,6 @@
 /**
  * MCP Server Connection implementation using HTTP Streamable transport.
- * 
+ *
  * This module provides the McpServerConnection class that manages communication
  * with a single MCP server via HTTP Streamable transport protocol.
  */
@@ -36,19 +36,19 @@ type ConnectionEventHandler = (status: ConnectionStatus) => void;
 
 /**
  * Manages connection to a single MCP server using HTTP Streamable transport.
- * 
+ *
  * Handles connection lifecycle, tool operations, resource operations,
  * authentication, and automatic reconnection.
- * 
+ *
  * @example
  * ```typescript
  * const connection = new McpServerConnection(config, logger);
- * 
+ *
  * await connection.connect();
- * 
+ *
  * const tools = await connection.listTools();
  * const result = await connection.callTool('get_weather', { city: 'Seattle' });
- * 
+ *
  * await connection.disconnect();
  * ```
  */
@@ -68,7 +68,7 @@ export class McpServerConnection {
 
     /**
      * Create a new MCP server connection.
-     * 
+     *
      * @param config - MCP server configuration
      * @param logger - Logger instance for logging connection events
      * @param metrics - Metrics instance for tracking MCP operations
@@ -101,17 +101,17 @@ export class McpServerConnection {
                         ErrorCode.MCP_SERVER_UNAVAILABLE,
                     ],
                 },
-                this.logger
+                this.logger,
             );
         }
     }
 
     /**
      * Establish connection to the MCP server.
-     * 
+     *
      * Initializes the HTTP Streamable transport, connects to the server,
      * and fetches available tools and resources.
-     * 
+     *
      * @throws {McpConnectionError} If connection fails
      */
     async connect(): Promise<void> {
@@ -135,24 +135,18 @@ export class McpServerConnection {
 
             if (transportType === 'sse') {
                 // Create SSE transport (standard MCP transport)
-                this.transport = new SSEClientTransport(
-                    new URL(this.config.url),
-                    {
-                        requestInit: {
-                            headers,
-                        },
-                    }
-                );
+                this.transport = new SSEClientTransport(new URL(this.config.url), {
+                    requestInit: {
+                        headers,
+                    },
+                });
             } else {
                 // Create HTTP Streamable transport
-                this.transport = new StreamableHTTPClientTransport(
-                    new URL(this.config.url),
-                    {
-                        requestInit: {
-                            headers,
-                        },
-                    }
-                );
+                this.transport = new StreamableHTTPClientTransport(new URL(this.config.url), {
+                    requestInit: {
+                        headers,
+                    },
+                });
             }
 
             // Create MCP client
@@ -163,7 +157,7 @@ export class McpServerConnection {
                 },
                 {
                     capabilities: {},
-                }
+                },
             );
 
             // Connect to the server with tracing
@@ -202,7 +196,7 @@ export class McpServerConnection {
             const mcpError = new McpConnectionError(
                 this.config.name,
                 'Failed to connect to MCP server',
-                error as Error
+                error as Error,
             );
 
             this.logger.error('Failed to connect to MCP server', {
@@ -227,7 +221,7 @@ export class McpServerConnection {
 
     /**
      * Disconnect from the MCP server.
-     * 
+     *
      * Closes the connection gracefully and cleans up resources.
      */
     async disconnect(): Promise<void> {
@@ -276,7 +270,7 @@ export class McpServerConnection {
 
     /**
      * Check if the connection is currently active.
-     * 
+     *
      * @returns true if connected, false otherwise
      */
     isConnected(): boolean {
@@ -285,7 +279,7 @@ export class McpServerConnection {
 
     /**
      * Get the current connection status.
-     * 
+     *
      * @returns Current connection status
      */
     getStatus(): ConnectionStatus {
@@ -294,7 +288,7 @@ export class McpServerConnection {
 
     /**
      * Get the server name.
-     * 
+     *
      * @returns Server name from configuration
      */
     getName(): string {
@@ -303,7 +297,7 @@ export class McpServerConnection {
 
     /**
      * Build HTTP headers including authentication.
-     * 
+     *
      * @returns Headers object for HTTP requests
      */
     private buildHeaders(): Record<string, string> {
@@ -334,7 +328,7 @@ export class McpServerConnection {
 
     /**
      * Fetch tools and resources from the MCP server.
-     * 
+     *
      * Called after successful connection to populate tool and resource caches.
      */
     private async fetchToolsAndResources(): Promise<void> {
@@ -363,10 +357,7 @@ export class McpServerConnection {
      */
     private async refreshTools(): Promise<void> {
         if (!this.client) {
-            throw new McpConnectionError(
-                this.config.name,
-                'Cannot refresh tools: not connected'
-            );
+            throw new McpConnectionError(this.config.name, 'Cannot refresh tools: not connected');
         }
 
         try {
@@ -429,7 +420,7 @@ export class McpServerConnection {
         if (!this.client) {
             throw new McpConnectionError(
                 this.config.name,
-                'Cannot refresh resources: not connected'
+                'Cannot refresh resources: not connected',
             );
         }
 
@@ -464,17 +455,14 @@ export class McpServerConnection {
 
     /**
      * List all available tools from the MCP server.
-     * 
+     *
      * Returns cached tool definitions. Call refreshTools() to update the cache.
-     * 
+     *
      * @returns Array of tool definitions
      */
     listTools(): Promise<McpTool[]> {
         if (!this.isConnected()) {
-            throw new McpConnectionError(
-                this.config.name,
-                'Cannot list tools: not connected'
-            );
+            throw new McpConnectionError(this.config.name, 'Cannot list tools: not connected');
         }
 
         return Array.from(this.tools.values());
@@ -482,7 +470,7 @@ export class McpServerConnection {
 
     /**
      * Execute a tool on the MCP server.
-     * 
+     *
      * @param name - Tool name
      * @param args - Tool input arguments
      * @returns Tool execution result
@@ -493,7 +481,7 @@ export class McpServerConnection {
             throw new McpToolExecutionError(
                 this.config.name,
                 name,
-                'Cannot call tool: not connected'
+                'Cannot call tool: not connected',
             );
         }
 
@@ -501,7 +489,7 @@ export class McpServerConnection {
             throw new McpToolExecutionError(
                 this.config.name,
                 name,
-                'Tool not found on this server'
+                'Tool not found on this server',
             );
         }
 
@@ -531,7 +519,10 @@ export class McpServerConnection {
                 toolName: name,
                 serverName: this.config.name,
                 latencyMs: latency,
-                hasContent: response.content && Array.isArray(response.content) && response.content.length > 0,
+                hasContent:
+                    response.content &&
+                    Array.isArray(response.content) &&
+                    response.content.length > 0,
             });
 
             // Emit metrics
@@ -539,10 +530,14 @@ export class McpServerConnection {
             this.metrics.addMetric('McpToolCallLatency', MetricUnit.Milliseconds, latency);
 
             // Extract content from response
-            if (response.content && Array.isArray(response.content) && response.content.length > 0) {
+            if (
+                response.content &&
+                Array.isArray(response.content) &&
+                response.content.length > 0
+            ) {
                 // If single text content, return the text directly
                 if (response.content.length === 1 && response.content[0].type === 'text') {
-                    return (response.content[0]).text;
+                    return response.content[0].text;
                 }
                 // Otherwise return the full content array
                 return response.content;
@@ -556,7 +551,7 @@ export class McpServerConnection {
                 this.config.name,
                 name,
                 'Tool execution failed',
-                error as Error
+                error as Error,
             );
 
             this.logger.error('MCP tool execution failed', {
@@ -576,7 +571,7 @@ export class McpServerConnection {
 
     /**
      * Check if a tool is available on this server.
-     * 
+     *
      * @param name - Tool name
      * @returns true if tool is available, false otherwise
      */
@@ -586,17 +581,14 @@ export class McpServerConnection {
 
     /**
      * List all available resources from the MCP server.
-     * 
+     *
      * Returns cached resource definitions. Call refreshResources() to update the cache.
-     * 
+     *
      * @returns Array of resource definitions
      */
     listResources(): Promise<McpResource[]> {
         if (!this.isConnected()) {
-            throw new McpConnectionError(
-                this.config.name,
-                'Cannot list resources: not connected'
-            );
+            throw new McpConnectionError(this.config.name, 'Cannot list resources: not connected');
         }
 
         return Array.from(this.resources.values());
@@ -604,7 +596,7 @@ export class McpServerConnection {
 
     /**
      * Read resource content from the MCP server.
-     * 
+     *
      * @param uri - Resource URI
      * @returns Resource content (text or blob)
      * @throws {McpResourceError} If resource read fails
@@ -614,7 +606,7 @@ export class McpServerConnection {
             throw new McpResourceError(
                 this.config.name,
                 uri,
-                'Cannot read resource: not connected'
+                'Cannot read resource: not connected',
             );
         }
 
@@ -641,7 +633,10 @@ export class McpServerConnection {
                 uri,
                 serverName: this.config.name,
                 latencyMs: latency,
-                hasContent: response.contents && Array.isArray(response.contents) && response.contents.length > 0,
+                hasContent:
+                    response.contents &&
+                    Array.isArray(response.contents) &&
+                    response.contents.length > 0,
             });
 
             // Emit metrics
@@ -649,12 +644,12 @@ export class McpServerConnection {
             this.metrics.addMetric('McpResourceReadLatency', MetricUnit.Milliseconds, latency);
 
             // Process resource contents
-            if (!response.contents || !Array.isArray(response.contents) || response.contents.length === 0) {
-                throw new McpResourceError(
-                    this.config.name,
-                    uri,
-                    'Resource has no content'
-                );
+            if (
+                !response.contents ||
+                !Array.isArray(response.contents) ||
+                response.contents.length === 0
+            ) {
+                throw new McpResourceError(this.config.name, uri, 'Resource has no content');
             }
 
             // Get the first content item
@@ -693,7 +688,7 @@ export class McpServerConnection {
                 this.config.name,
                 uri,
                 'Resource read failed',
-                error as Error
+                error as Error,
             );
 
             this.logger.error('MCP resource read failed', {
@@ -713,10 +708,10 @@ export class McpServerConnection {
 
     /**
      * Attempt to reconnect to the MCP server.
-     * 
+     *
      * Uses exponential backoff strategy based on reconnection configuration.
      * Updates connection status and emits events during reconnection process.
-     * 
+     *
      * @returns Promise that resolves when reconnection succeeds
      * @throws {McpConnectionError} If reconnection fails after max attempts
      */
@@ -724,7 +719,7 @@ export class McpServerConnection {
         if (!this.shouldReconnect()) {
             throw new McpConnectionError(
                 this.config.name,
-                'Reconnection not allowed or max attempts exceeded'
+                'Reconnection not allowed or max attempts exceeded',
             );
         }
 
@@ -777,7 +772,7 @@ export class McpServerConnection {
             if (this.reconnectHandler) {
                 await this.reconnectHandler.executeWithRetry(
                     async () => await this.connect(),
-                    `McpReconnect-${this.config.name}`
+                    `McpReconnect-${this.config.name}`,
                 );
             } else {
                 await this.connect();
@@ -807,7 +802,7 @@ export class McpServerConnection {
                 const maxDelay = this.config.reconnect?.maxDelay ?? 30000;
                 const delay = Math.min(
                     baseDelay * Math.pow(2, this.reconnectAttempts - 1),
-                    maxDelay
+                    maxDelay,
                 );
 
                 this.logger.info('Will retry reconnection', {
@@ -817,7 +812,7 @@ export class McpServerConnection {
                 });
 
                 // Schedule next reconnection attempt
-                await new Promise(resolve => setTimeout(resolve, delay));
+                await new Promise((resolve) => setTimeout(resolve, delay));
                 return this.attemptReconnect();
             } else {
                 // Max attempts reached
@@ -832,7 +827,7 @@ export class McpServerConnection {
                     this.config.name,
                     'Failed to reconnect after max attempts',
                     error as Error,
-                    { attempts: this.reconnectAttempts }
+                    { attempts: this.reconnectAttempts },
                 );
             }
         }
@@ -840,9 +835,9 @@ export class McpServerConnection {
 
     /**
      * Check if reconnection should be attempted.
-     * 
+     *
      * Considers reconnection configuration and current attempt count.
-     * 
+     *
      * @returns true if reconnection should be attempted, false otherwise
      */
     shouldReconnect(): boolean {
@@ -867,7 +862,7 @@ export class McpServerConnection {
 
     /**
      * Reset reconnection attempt counter.
-     * 
+     *
      * Called after successful connection or manual disconnect.
      */
     private resetReconnectAttempts(): void {
@@ -876,11 +871,14 @@ export class McpServerConnection {
 
     /**
      * Register an event handler for connection state changes.
-     * 
+     *
      * @param event - Event type ('connected', 'disconnected', 'reconnecting', 'error')
      * @param handler - Handler function to call when event occurs
      */
-    on(event: 'connected' | 'disconnected' | 'reconnecting' | 'error', handler: ConnectionEventHandler): void {
+    on(
+        event: 'connected' | 'disconnected' | 'reconnecting' | 'error',
+        handler: ConnectionEventHandler,
+    ): void {
         if (!this.eventHandlers.has(event)) {
             this.eventHandlers.set(event, []);
         }
@@ -889,7 +887,7 @@ export class McpServerConnection {
 
     /**
      * Emit an event to all registered handlers.
-     * 
+     *
      * @param event - Event type
      * @param status - Current connection status
      */
@@ -911,7 +909,7 @@ export class McpServerConnection {
 
     /**
      * Execute an operation within a trace subsegment.
-     * 
+     *
      * @param name - Name of the subsegment
      * @param callback - Operation to execute
      * @returns Result of the operation

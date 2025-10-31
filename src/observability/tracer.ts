@@ -1,6 +1,6 @@
 /**
  * Tracer setup utilities for AWS Powertools Tracer integration
- * 
+ *
  * This module provides utilities for creating and configuring AWS Powertools Tracer
  * instances with sensible defaults for the Agent Bedrock.
  */
@@ -18,7 +18,7 @@ export interface TracerConfig {
 
     /**
      * Whether to capture HTTP/HTTPS requests.
-     * 
+     *
      * @default true
      */
     captureHTTPsRequests?: boolean;
@@ -26,10 +26,10 @@ export interface TracerConfig {
 
 /**
  * Creates a configured AWS Powertools Tracer instance.
- * 
+ *
  * @param config - Tracer configuration options
  * @returns Configured Tracer instance
- * 
+ *
  * @example
  * ```typescript
  * const tracer = createTracer({
@@ -49,12 +49,12 @@ export function createTracer(config: TracerConfig): Tracer {
  * Helper methods for common tracing patterns in the Agent Framework.
  */
 export class TracerHelper {
-    constructor(private tracer: Tracer) { }
+    constructor(private tracer: Tracer) {}
 
     /**
      * Adds annotations to the current trace segment.
      * Annotations are indexed and can be used for filtering traces.
-     * 
+     *
      * @param key - Annotation key
      * @param value - Annotation value
      */
@@ -65,7 +65,7 @@ export class TracerHelper {
     /**
      * Adds metadata to the current trace segment.
      * Metadata is not indexed but provides additional context.
-     * 
+     *
      * @param key - Metadata key
      * @param value - Metadata value
      */
@@ -75,7 +75,7 @@ export class TracerHelper {
 
     /**
      * Traces agent initialization.
-     * 
+     *
      * @param agentName - Name of the agent
      * @param modelId - Model identifier
      * @param config - Additional configuration
@@ -83,7 +83,7 @@ export class TracerHelper {
     traceAgentInitialization(
         agentName: string,
         modelId: string,
-        config?: Record<string, any>
+        config?: Record<string, any>,
     ): void {
         this.addAnnotation('agentName', agentName);
         this.addAnnotation('modelId', modelId);
@@ -95,7 +95,7 @@ export class TracerHelper {
 
     /**
      * Traces a conversation turn.
-     * 
+     *
      * @param sessionId - Optional session identifier
      * @param streaming - Whether streaming is enabled
      */
@@ -110,16 +110,12 @@ export class TracerHelper {
 
     /**
      * Traces tool execution.
-     * 
+     *
      * @param toolName - Name of the tool
      * @param toolUseId - Unique identifier for this tool use
      * @param success - Whether execution was successful
      */
-    traceToolExecution(
-        toolName: string,
-        toolUseId: string,
-        success: boolean
-    ): void {
+    traceToolExecution(toolName: string, toolUseId: string, success: boolean): void {
         this.addAnnotation('toolName', toolName);
         this.addAnnotation('toolUseId', toolUseId);
         this.addAnnotation('toolSuccess', success);
@@ -127,7 +123,7 @@ export class TracerHelper {
 
     /**
      * Traces guardrail intervention.
-     * 
+     *
      * @param action - Guardrail action taken
      */
     traceGuardrailIntervention(action: string): void {
@@ -136,13 +132,13 @@ export class TracerHelper {
 
     /**
      * Traces memory operations.
-     * 
+     *
      * @param operation - Type of memory operation
      * @param messageCount - Number of messages
      */
     traceMemoryOperation(
         operation: 'load' | 'save' | 'clear' | 'prune',
-        messageCount?: number
+        messageCount?: number,
     ): void {
         this.addAnnotation('memoryOperation', operation);
         if (messageCount !== undefined) {
@@ -153,11 +149,11 @@ export class TracerHelper {
     /**
      * Creates a subsegment for a specific operation.
      * Useful for tracking detailed timing of operations.
-     * 
+     *
      * @param name - Name of the subsegment
      * @param callback - Function to execute within the subsegment
      * @returns Result of the callback
-     * 
+     *
      * @example
      * ```typescript
      * const result = await tracerHelper.withSubsegment('BedrockAPICall', async () => {
@@ -165,10 +161,7 @@ export class TracerHelper {
      * });
      * ```
      */
-    async withSubsegment<T>(
-        name: string,
-        callback: () => Promise<T>
-    ): Promise<T> {
+    async withSubsegment<T>(name: string, callback: () => Promise<T>): Promise<T> {
         const segment = this.tracer.getSegment();
         if (!segment) {
             // If no active segment, just execute the callback
@@ -190,7 +183,7 @@ export class TracerHelper {
 
     /**
      * Creates a subsegment for synchronous operations.
-     * 
+     *
      * @param name - Name of the subsegment
      * @param callback - Function to execute within the subsegment
      * @returns Result of the callback

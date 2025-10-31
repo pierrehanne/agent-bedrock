@@ -1,6 +1,6 @@
 /**
  * Error classes and types for the Agent Bedrock.
- * 
+ *
  * This module provides a comprehensive error hierarchy for handling
  * various failure scenarios in the framework.
  */
@@ -57,7 +57,7 @@ export enum ErrorCode {
 
 /**
  * Base error class for all Agent Bedrock errors.
- * 
+ *
  * @example
  * ```typescript
  * throw new BedrockAgentError(
@@ -91,7 +91,7 @@ export class BedrockAgentError extends Error {
         message: string,
         code: ErrorCode = ErrorCode.UNKNOWN_ERROR,
         cause?: Error,
-        context?: Record<string, any>
+        context?: Record<string, any>,
     ) {
         super(message);
         this.name = 'BedrockAgentError';
@@ -117,17 +117,19 @@ export class BedrockAgentError extends Error {
             context: this.context,
             timestamp: this.timestamp.toISOString(),
             stack: this.stack,
-            cause: this.cause ? {
-                name: this.cause.name,
-                message: this.cause.message,
-            } : undefined,
+            cause: this.cause
+                ? {
+                      name: this.cause.name,
+                      message: this.cause.message,
+                  }
+                : undefined,
         };
     }
 }
 
 /**
  * Error thrown when input validation fails.
- * 
+ *
  * @example
  * ```typescript
  * throw new ValidationError(
@@ -145,7 +147,7 @@ export class ValidationError extends BedrockAgentError {
 
 /**
  * Error thrown when Bedrock API calls fail.
- * 
+ *
  * @example
  * ```typescript
  * throw new APIError(
@@ -171,7 +173,7 @@ export class APIError extends BedrockAgentError {
         message: string,
         statusCode?: number,
         cause?: Error,
-        context?: Record<string, any>
+        context?: Record<string, any>,
     ) {
         const code = APIError.getErrorCode(statusCode);
         super(message, code, cause, context);
@@ -198,9 +200,7 @@ export class APIError extends BedrockAgentError {
             case 504:
                 return ErrorCode.API_TIMEOUT;
             default:
-                return statusCode >= 500
-                    ? ErrorCode.API_INTERNAL_ERROR
-                    : ErrorCode.API_ERROR;
+                return statusCode >= 500 ? ErrorCode.API_INTERNAL_ERROR : ErrorCode.API_ERROR;
         }
     }
 
@@ -215,7 +215,7 @@ export class APIError extends BedrockAgentError {
 
 /**
  * Error thrown when tool execution fails.
- * 
+ *
  * @example
  * ```typescript
  * throw new ToolExecutionError(
@@ -236,7 +236,7 @@ export class ToolExecutionError extends BedrockAgentError {
             `Tool execution failed: ${toolName} - ${message}`,
             ErrorCode.TOOL_EXECUTION_ERROR,
             cause,
-            { ...context, toolName }
+            { ...context, toolName },
         );
         this.name = 'ToolExecutionError';
         this.toolName = toolName;
@@ -245,7 +245,7 @@ export class ToolExecutionError extends BedrockAgentError {
 
 /**
  * Error thrown when memory operations fail.
- * 
+ *
  * @example
  * ```typescript
  * throw new MemoryError(
@@ -260,7 +260,7 @@ export class MemoryError extends BedrockAgentError {
         message: string,
         code: ErrorCode = ErrorCode.MEMORY_ERROR,
         cause?: Error,
-        context?: Record<string, any>
+        context?: Record<string, any>,
     ) {
         super(message, code, cause, context);
         this.name = 'MemoryError';
@@ -269,7 +269,7 @@ export class MemoryError extends BedrockAgentError {
 
 /**
  * Error thrown when streaming operations fail.
- * 
+ *
  * @example
  * ```typescript
  * throw new StreamError(
@@ -283,7 +283,7 @@ export class StreamError extends BedrockAgentError {
         message: string,
         code: ErrorCode = ErrorCode.STREAM_ERROR,
         cause?: Error,
-        context?: Record<string, any>
+        context?: Record<string, any>,
     ) {
         super(message, code, cause, context);
         this.name = 'StreamError';
@@ -292,7 +292,7 @@ export class StreamError extends BedrockAgentError {
 
 /**
  * Error thrown when MCP connection operations fail.
- * 
+ *
  * @example
  * ```typescript
  * throw new McpConnectionError(
@@ -313,17 +313,12 @@ export class McpConnectionError extends BedrockAgentError {
      */
     public readonly operation?: string;
 
-    constructor(
-        serverName: string,
-        message: string,
-        cause?: Error,
-        context?: Record<string, any>
-    ) {
+    constructor(serverName: string, message: string, cause?: Error, context?: Record<string, any>) {
         super(
             `MCP connection error [${serverName}]: ${message}`,
             ErrorCode.MCP_CONNECTION_ERROR,
             cause,
-            { ...context, serverName }
+            { ...context, serverName },
         );
         this.name = 'McpConnectionError';
         this.serverName = serverName;
@@ -333,7 +328,7 @@ export class McpConnectionError extends BedrockAgentError {
 
 /**
  * Error thrown when MCP tool execution fails.
- * 
+ *
  * @example
  * ```typescript
  * throw new McpToolExecutionError(
@@ -360,13 +355,13 @@ export class McpToolExecutionError extends BedrockAgentError {
         toolName: string,
         message: string,
         cause?: Error,
-        context?: Record<string, any>
+        context?: Record<string, any>,
     ) {
         super(
             `MCP tool execution error [${serverName}/${toolName}]: ${message}`,
             ErrorCode.MCP_TOOL_EXECUTION_ERROR,
             cause,
-            { ...context, serverName, toolName }
+            { ...context, serverName, toolName },
         );
         this.name = 'McpToolExecutionError';
         this.serverName = serverName;
@@ -376,7 +371,7 @@ export class McpToolExecutionError extends BedrockAgentError {
 
 /**
  * Error thrown when MCP resource operations fail.
- * 
+ *
  * @example
  * ```typescript
  * throw new McpResourceError(
@@ -403,13 +398,13 @@ export class McpResourceError extends BedrockAgentError {
         resourceUri: string,
         message: string,
         cause?: Error,
-        context?: Record<string, any>
+        context?: Record<string, any>,
     ) {
         super(
             `MCP resource error [${String(serverName)}/${String(resourceUri)}]: ${message}`,
             ErrorCode.MCP_RESOURCE_ERROR,
             cause,
-            { ...context, serverName, resourceUri } as Record<string, unknown>
+            { ...context, serverName, resourceUri } as Record<string, unknown>,
         );
         this.name = 'McpResourceError';
         this.serverName = serverName;

@@ -1,6 +1,6 @@
 /**
  * MCP Client Manager implementation for managing multiple MCP server connections.
- * 
+ *
  * This module provides the McpClientManager class that coordinates connections
  * to multiple MCP servers and aggregates their tools and resources.
  */
@@ -21,31 +21,31 @@ import type {
 
 /**
  * Manages connections to multiple MCP servers.
- * 
+ *
  * Provides centralized management of MCP server connections, tool aggregation,
  * and resource access across multiple servers.
- * 
+ *
  * @example
  * ```typescript
  * const manager = new McpClientManager(logger, metrics);
- * 
+ *
  * // Connect to multiple servers
  * await manager.connect({
  *   name: 'weather',
  *   url: 'https://weather-mcp.example.com/mcp'
  * });
- * 
+ *
  * await manager.connect({
  *   name: 'database',
  *   url: 'https://db-mcp.example.com/mcp'
  * });
- * 
+ *
  * // List all tools from all servers
  * const tools = await manager.listAllTools();
- * 
+ *
  * // Execute a tool (automatically routed to correct server)
  * const result = await manager.executeTool('get_weather', { city: 'Seattle' });
- * 
+ *
  * // Clean up
  * await manager.close();
  * ```
@@ -58,7 +58,7 @@ export class McpClientManager {
 
     /**
      * Create a new MCP Client Manager.
-     * 
+     *
      * @param logger - Logger instance for logging manager operations
      * @param metrics - Metrics instance for tracking MCP operations
      * @param tracer - Tracer instance for distributed tracing
@@ -78,11 +78,11 @@ export class McpClientManager {
 
     /**
      * Connect to an MCP server.
-     * 
+     *
      * Creates a new connection to the specified MCP server and adds it to the
      * connection registry. If a connection with the same name already exists,
      * throws an error.
-     * 
+     *
      * @param config - MCP server configuration
      * @throws {Error} If a connection with the same name already exists
      * @throws {McpConnectionError} If connection to the server fails
@@ -90,9 +90,7 @@ export class McpClientManager {
     async connect(config: McpServerConfig): Promise<void> {
         // Validate that connection name is unique
         if (this.connections.has(config.name)) {
-            const error = new Error(
-                `MCP server with name '${config.name}' is already connected`
-            );
+            const error = new Error(`MCP server with name '${config.name}' is already connected`);
             this.logger.error('Duplicate MCP server name', {
                 serverName: config.name,
                 error,
@@ -107,7 +105,12 @@ export class McpClientManager {
 
         try {
             // Create new connection
-            const connection = new McpServerConnection(config, this.logger, this.metrics, this.tracer);
+            const connection = new McpServerConnection(
+                config,
+                this.logger,
+                this.metrics,
+                this.tracer,
+            );
 
             // Attempt to connect
             await connection.connect();
@@ -138,10 +141,10 @@ export class McpClientManager {
 
     /**
      * Disconnect from an MCP server.
-     * 
+     *
      * Closes the connection to the specified MCP server and removes it from
      * the connection registry.
-     * 
+     *
      * @param name - Name of the MCP server to disconnect
      * @throws {Error} If no connection with the specified name exists
      */
@@ -149,9 +152,7 @@ export class McpClientManager {
         const connection = this.connections.get(name);
 
         if (!connection) {
-            const error = new Error(
-                `No MCP server connection found with name '${name}'`
-            );
+            const error = new Error(`No MCP server connection found with name '${name}'`);
             this.logger.error('Cannot disconnect: server not found', {
                 serverName: name,
                 error,
@@ -193,7 +194,7 @@ export class McpClientManager {
 
     /**
      * Get a connection by name.
-     * 
+     *
      * @param name - Name of the MCP server
      * @returns Connection instance, or undefined if not found
      */
@@ -203,10 +204,10 @@ export class McpClientManager {
 
     /**
      * List all connected MCP servers.
-     * 
+     *
      * Returns information about all currently connected MCP servers including
      * their status, tool count, and resource count.
-     * 
+     *
      * @returns Array of server information objects
      */
     listConnections(): McpServerInfo[] {
@@ -231,17 +232,23 @@ export class McpClientManager {
                 // Get tool and resource counts synchronously for connected servers
                 try {
                     // These methods return cached values, so they're safe to call
-                    connection.listTools().then(tools => {
-                        info.toolCount = tools.length;
-                    }).catch(() => {
-                        // Keep count at 0 on error
-                    });
+                    connection
+                        .listTools()
+                        .then((tools) => {
+                            info.toolCount = tools.length;
+                        })
+                        .catch(() => {
+                            // Keep count at 0 on error
+                        });
 
-                    connection.listResources().then(resources => {
-                        info.resourceCount = resources.length;
-                    }).catch(() => {
-                        // Keep count at 0 on error
-                    });
+                    connection
+                        .listResources()
+                        .then((resources) => {
+                            info.resourceCount = resources.length;
+                        })
+                        .catch(() => {
+                            // Keep count at 0 on error
+                        });
                 } catch {
                     // Ignore errors, keep counts at 0
                 }
@@ -257,7 +264,7 @@ export class McpClientManager {
 
     /**
      * Close all MCP server connections.
-     * 
+     *
      * Disconnects from all MCP servers and clears the connection registry.
      * Should be called when the Agent is being disposed.
      */
@@ -271,13 +278,13 @@ export class McpClientManager {
         // Disconnect from all servers
         for (const [name, connection] of this.connections) {
             disconnectPromises.push(
-                connection.disconnect().catch(error => {
+                connection.disconnect().catch((error) => {
                     this.logger.error('Error disconnecting from MCP server', {
                         serverName: name,
                         error,
                     });
                     // Don't throw, continue with other disconnects
-                })
+                }),
             );
         }
 
@@ -295,10 +302,10 @@ export class McpClientManager {
 
     /**
      * List all tools from all connected MCP servers.
-     * 
+     *
      * Aggregates tools from all connected servers. If multiple servers provide
      * tools with the same name, a warning is logged but all tools are included.
-     * 
+     *
      * @returns Array of all available MCP tools
      */
     async listAllTools(): Promise<McpTool[]> {
@@ -358,10 +365,10 @@ export class McpClientManager {
 
     /**
      * Find which MCP server provides a specific tool.
-     * 
+     *
      * Searches all connected servers to find which one provides the specified tool.
      * If multiple servers provide the same tool, returns the first match found.
-     * 
+     *
      * @param toolName - Name of the tool to find
      * @returns Connection to the server providing the tool, or undefined if not found
      */
@@ -395,10 +402,10 @@ export class McpClientManager {
 
     /**
      * Execute a tool on the appropriate MCP server.
-     * 
+     *
      * Automatically routes the tool call to the correct MCP server based on
      * which server provides the tool.
-     * 
+     *
      * @param toolName - Name of the tool to execute
      * @param input - Tool input arguments
      * @returns Tool execution result
@@ -417,7 +424,7 @@ export class McpClientManager {
             const error = new McpToolExecutionError(
                 'unknown',
                 toolName,
-                'Tool not found on any connected MCP server'
+                'Tool not found on any connected MCP server',
             );
 
             this.logger.error('Cannot execute tool: not found', {
@@ -468,9 +475,9 @@ export class McpClientManager {
 
     /**
      * List all resources from all connected MCP servers.
-     * 
+     *
      * Aggregates resources from all connected servers.
-     * 
+     *
      * @returns Array of all available MCP resources
      */
     async listAllResources(): Promise<McpResource[]> {
@@ -516,13 +523,13 @@ export class McpClientManager {
 
     /**
      * Get resource content from the appropriate MCP server.
-     * 
+     *
      * Parses the resource URI to determine which server provides the resource,
      * then fetches the content from that server.
-     * 
+     *
      * The URI format is expected to include the server name as a prefix or
      * the method will search all servers for a matching resource URI.
-     * 
+     *
      * @param uri - Resource URI
      * @returns Resource content (text or blob)
      * @throws {McpResourceError} If resource is not found or fetch fails
@@ -543,7 +550,7 @@ export class McpClientManager {
             try {
                 // Try to list resources and find matching URI
                 const resources = await connection.listResources();
-                const hasResource = resources.some(r => r.uri === uri);
+                const hasResource = resources.some((r) => r.uri === uri);
 
                 if (hasResource) {
                     this.logger.debug('Found resource on MCP server', {
@@ -580,7 +587,7 @@ export class McpClientManager {
         const error = new McpResourceError(
             'unknown',
             uri,
-            'Resource not found on any connected MCP server'
+            'Resource not found on any connected MCP server',
         );
 
         this.logger.error('Cannot fetch resource: not found', {

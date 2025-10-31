@@ -1,6 +1,6 @@
 /**
  * Message and content block type definitions matching Bedrock API structure.
- * 
+ *
  * These types define the structure of messages exchanged between users,
  * the Agent, and the Bedrock API.
  */

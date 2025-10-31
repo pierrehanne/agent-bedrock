@@ -1,19 +1,19 @@
 /**
  * Model Context Protocol (MCP) type definitions for the Agent Bedrock.
- * 
+ *
  * This module contains interfaces and types for integrating with MCP servers
  * via HTTP Streamable transport. MCP servers provide external tools and resources
  * that can be dynamically attached to Agents.
- * 
+ *
  * @see https://modelcontextprotocol.io
  */
 
 /**
  * Configuration for connecting to an MCP server.
- * 
+ *
  * MCP servers provide tools and resources that extend Agent capabilities.
  * Connections use HTTP Streamable transport for communication.
- * 
+ *
  * @example
  * ```typescript
  * const mcpConfig: McpServerConfig = {
@@ -38,7 +38,7 @@ export interface McpServerConfig {
     /**
      * Unique identifier for the MCP server.
      * Used to reference the server in Agent operations.
-     * 
+     *
      * @example 'weather-service'
      * @example 'database-connector'
      */
@@ -47,7 +47,7 @@ export interface McpServerConfig {
     /**
      * HTTP endpoint URL for the MCP server.
      * Must use HTTP or HTTPS protocol.
-     * 
+     *
      * @example 'https://mcp-server.example.com/mcp'
      * @example 'http://localhost:3000/mcp'
      */
@@ -80,17 +80,17 @@ export interface McpServerConfig {
     /**
      * Custom HTTP headers to include in all requests to the MCP server.
      * Useful for API keys, tracking headers, or custom authentication.
-     * 
+     *
      * @example { 'X-API-Key': 'abc123', 'X-Request-ID': 'xyz' }
      */
     customHeaders?: Record<string, string>;
 
     /**
      * Transport protocol to use for MCP communication.
-     * 
+     *
      * - 'sse': Server-Sent Events (SSE) - Standard MCP transport using SSE for receiving messages
      * - 'streamable-http': HTTP Streamable transport - Alternative transport for streaming
-     * 
+     *
      * @default 'sse'
      */
     transport?: 'sse' | 'streamable-http';
@@ -98,13 +98,13 @@ export interface McpServerConfig {
 
 /**
  * Authentication configuration for MCP server connections.
- * 
+ *
  * Supports bearer token authentication and custom header-based authentication.
  */
 export interface McpAuthConfig {
     /**
      * Authentication type.
-     * 
+     *
      * - 'bearer': Uses Authorization header with Bearer token
      * - 'custom': Uses custom headers defined in headers property
      */
@@ -113,7 +113,7 @@ export interface McpAuthConfig {
     /**
      * Bearer token for authentication.
      * Used when type is 'bearer'.
-     * 
+     *
      * @example 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
      */
     token?: string;
@@ -121,7 +121,7 @@ export interface McpAuthConfig {
     /**
      * Custom authentication headers.
      * Used when type is 'custom' or to supplement bearer authentication.
-     * 
+     *
      * @example { 'X-API-Key': 'secret-key', 'X-Client-ID': 'client-123' }
      */
     headers?: Record<string, string>;
@@ -129,13 +129,13 @@ export interface McpAuthConfig {
 
 /**
  * Reconnection configuration for handling MCP server connection failures.
- * 
+ *
  * Implements exponential backoff strategy for automatic reconnection attempts.
  */
 export interface McpReconnectConfig {
     /**
      * Enable automatic reconnection on connection failure.
-     * 
+     *
      * @default true
      */
     enabled?: boolean;
@@ -143,7 +143,7 @@ export interface McpReconnectConfig {
     /**
      * Maximum number of reconnection attempts before marking server as unavailable.
      * Set to 0 for unlimited attempts (not recommended).
-     * 
+     *
      * @minimum 0
      * @default 3
      */
@@ -152,7 +152,7 @@ export interface McpReconnectConfig {
     /**
      * Base delay in milliseconds for exponential backoff.
      * First retry waits baseDelay ms, second waits baseDelay * 2 ms, etc.
-     * 
+     *
      * @minimum 0
      * @default 1000
      */
@@ -161,7 +161,7 @@ export interface McpReconnectConfig {
     /**
      * Maximum delay in milliseconds between reconnection attempts.
      * Caps the exponential backoff to prevent excessive wait times.
-     * 
+     *
      * @minimum 0
      * @default 30000
      */
@@ -170,22 +170,22 @@ export interface McpReconnectConfig {
 
 /**
  * Tool filtering configuration for MCP servers.
- * 
+ *
  * Controls which tools from an MCP server are exposed to the Agent.
  * Useful for security, limiting capabilities, or avoiding tool conflicts.
- * 
+ *
  * @example
  * ```typescript
  * // Only allow specific tools
  * const filter1: McpToolFilter = {
  *   allowedTools: ['get_weather', 'get_forecast']
  * };
- * 
+ *
  * // Allow all except dangerous tools
  * const filter2: McpToolFilter = {
  *   deniedTools: ['delete_database', 'shutdown_server']
  * };
- * 
+ *
  * // Combine both (allowedTools applied first, then deniedTools)
  * const filter3: McpToolFilter = {
  *   allowedTools: ['get_*', 'list_*'],
@@ -198,7 +198,7 @@ export interface McpToolFilter {
      * Whitelist of allowed tool names.
      * If specified, only tools matching this list are exposed.
      * Applied before deniedTools filter.
-     * 
+     *
      * Supports exact matches only (no wildcards in current implementation).
      */
     allowedTools?: string[];
@@ -207,7 +207,7 @@ export interface McpToolFilter {
      * Blacklist of denied tool names.
      * Tools matching this list are excluded from exposure.
      * Applied after allowedTools filter.
-     * 
+     *
      * Supports exact matches only (no wildcards in current implementation).
      */
     deniedTools?: string[];
@@ -215,7 +215,7 @@ export interface McpToolFilter {
 
 /**
  * Tool definition from an MCP server.
- * 
+ *
  * Represents a tool provided by an MCP server that can be invoked by the Agent.
  * Similar to local ToolDefinition but includes server reference.
  */
@@ -247,7 +247,7 @@ export interface McpTool {
 
 /**
  * Resource definition from an MCP server.
- * 
+ *
  * Represents data or content provided by an MCP server that can be
  * accessed by the Agent to provide additional context.
  */
@@ -255,7 +255,7 @@ export interface McpResource {
     /**
      * Unique URI identifying the resource.
      * Format is server-specific but typically follows URI conventions.
-     * 
+     *
      * @example 'file:///path/to/document.txt'
      * @example 'db://customers/12345'
      * @example 'https://api.example.com/data/item'
@@ -274,7 +274,7 @@ export interface McpResource {
 
     /**
      * MIME type of the resource content.
-     * 
+     *
      * @example 'text/plain'
      * @example 'application/json'
      * @example 'image/png'
@@ -290,7 +290,7 @@ export interface McpResource {
 
 /**
  * Content of a resource fetched from an MCP server.
- * 
+ *
  * Resources can contain either text or binary data.
  * The content type is indicated by which property is populated.
  */
@@ -303,7 +303,7 @@ export interface ResourceContent {
 
     /**
      * MIME type of the resource content.
-     * 
+     *
      * @example 'text/plain'
      * @example 'application/json'
      * @example 'image/png'
@@ -325,7 +325,7 @@ export interface ResourceContent {
 
 /**
  * Information about a connected MCP server.
- * 
+ *
  * Provides status and metadata about an MCP server connection.
  * Used for monitoring and debugging MCP integrations.
  */
@@ -342,7 +342,7 @@ export interface McpServerInfo {
 
     /**
      * Current connection status.
-     * 
+     *
      * - 'connected': Successfully connected and operational
      * - 'disconnected': Not connected (initial state or after disconnect)
      * - 'reconnecting': Attempting to reconnect after failure
@@ -377,49 +377,49 @@ export interface McpServerInfo {
 
 /**
  * Connection status for an MCP server.
- * 
+ *
  * Discriminated union type that provides detailed status information
  * based on the current connection state.
  */
 export type ConnectionStatus =
     | {
-        /**
-         * Server is connected and operational.
-         */
-        state: 'connected';
+          /**
+           * Server is connected and operational.
+           */
+          state: 'connected';
 
-        /**
-         * Timestamp when connection was established.
-         */
-        connectedAt: Date;
-    }
+          /**
+           * Timestamp when connection was established.
+           */
+          connectedAt: Date;
+      }
     | {
-        /**
-         * Server is not connected.
-         * This is the initial state or after explicit disconnect.
-         */
-        state: 'disconnected';
-    }
+          /**
+           * Server is not connected.
+           * This is the initial state or after explicit disconnect.
+           */
+          state: 'disconnected';
+      }
     | {
-        /**
-         * Server is attempting to reconnect after a failure.
-         */
-        state: 'reconnecting';
+          /**
+           * Server is attempting to reconnect after a failure.
+           */
+          state: 'reconnecting';
 
-        /**
-         * Current reconnection attempt number.
-         * Starts at 1 for first retry.
-         */
-        attempt: number;
-    }
+          /**
+           * Current reconnection attempt number.
+           * Starts at 1 for first retry.
+           */
+          attempt: number;
+      }
     | {
-        /**
-         * Server connection failed and is not retrying.
-         */
-        state: 'error';
+          /**
+           * Server connection failed and is not retrying.
+           */
+          state: 'error';
 
-        /**
-         * Error message describing the failure.
-         */
-        error: string;
-    };
+          /**
+           * Error message describing the failure.
+           */
+          error: string;
+      };

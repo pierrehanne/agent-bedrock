@@ -1,6 +1,6 @@
 /**
  * Memory Manager for conversation history management.
- * 
+ *
  * This module provides short-term (in-memory) and long-term (persistent)
  * conversation history management with automatic pruning based on message
  * count and token limits.
@@ -20,11 +20,11 @@ const DEFAULT_MAX_TOKENS = 4000;
 
 /**
  * Manages conversation history with support for short-term and long-term memory.
- * 
+ *
  * Short-term memory is stored in-memory and automatically pruned based on
  * message count and token limits. Long-term memory is persisted using
  * user-provided fetch and save callbacks.
- * 
+ *
  * @example
  * ```typescript
  * const memoryManager = new MemoryManager(
@@ -37,13 +37,13 @@ const DEFAULT_MAX_TOKENS = 4000;
  *   },
  *   logger
  * );
- * 
+ *
  * // Add messages to history
  * memoryManager.addMessage({ role: 'user', content: [{ text: 'Hello' }] });
- * 
+ *
  * // Load from long-term storage
  * await memoryManager.loadSession('session-123');
- * 
+ *
  * // Save to long-term storage
  * await memoryManager.saveSession('session-123');
  * ```
@@ -58,7 +58,7 @@ export class MemoryManager {
 
     /**
      * Creates a new MemoryManager instance.
-     * 
+     *
      * @param config - Memory configuration
      * @param logger - Logger instance for logging memory operations
      */
@@ -85,11 +85,11 @@ export class MemoryManager {
 
     /**
      * Adds a message to the conversation history.
-     * 
+     *
      * After adding the message, automatically prunes memory if limits are exceeded.
-     * 
+     *
      * @param message - Message to add to history
-     * 
+     *
      * @example
      * ```typescript
      * memoryManager.addMessage({
@@ -113,9 +113,9 @@ export class MemoryManager {
 
     /**
      * Retrieves all messages from the conversation history.
-     * 
+     *
      * @returns Array of messages in chronological order
-     * 
+     *
      * @example
      * ```typescript
      * const history = memoryManager.getMessages();
@@ -128,10 +128,10 @@ export class MemoryManager {
 
     /**
      * Clears all messages from short-term memory.
-     * 
+     *
      * This does not affect long-term storage. Use this to reset
      * the conversation context for a new conversation.
-     * 
+     *
      * @example
      * ```typescript
      * memoryManager.clear();
@@ -149,14 +149,14 @@ export class MemoryManager {
 
     /**
      * Loads conversation history from long-term storage.
-     * 
+     *
      * Fetches messages using the configured fetch callback and replaces
      * the current short-term memory. If fetch fails, logs error but does
      * not throw to avoid interrupting conversation flow.
-     * 
+     *
      * @param sessionId - Unique identifier for the conversation session
      * @throws {MemoryError} If long-term memory is not configured
-     * 
+     *
      * @example
      * ```typescript
      * await memoryManager.loadSession('user-123-session-456');
@@ -168,7 +168,7 @@ export class MemoryManager {
                 'Long-term memory not configured',
                 ErrorCode.MEMORY_ERROR,
                 undefined,
-                { sessionId }
+                { sessionId },
             );
         }
 
@@ -192,7 +192,7 @@ export class MemoryManager {
                 `Failed to fetch conversation history for session: ${sessionId}`,
                 ErrorCode.MEMORY_FETCH_ERROR,
                 error as Error,
-                { sessionId }
+                { sessionId },
             );
 
             this.logger.error('Failed to load session from long-term memory', {
@@ -206,14 +206,14 @@ export class MemoryManager {
 
     /**
      * Saves conversation history to long-term storage.
-     * 
+     *
      * Persists current short-term memory using the configured save callback.
      * If save fails, logs error but does not throw to avoid interrupting
      * conversation flow.
-     * 
+     *
      * @param sessionId - Unique identifier for the conversation session
      * @throws {MemoryError} If long-term memory is not configured
-     * 
+     *
      * @example
      * ```typescript
      * await memoryManager.saveSession('user-123-session-456');
@@ -225,7 +225,7 @@ export class MemoryManager {
                 'Long-term memory not configured',
                 ErrorCode.MEMORY_ERROR,
                 undefined,
-                { sessionId }
+                { sessionId },
             );
         }
 
@@ -246,7 +246,7 @@ export class MemoryManager {
                 `Failed to save conversation history for session: ${sessionId}`,
                 ErrorCode.MEMORY_SAVE_ERROR,
                 error as Error,
-                { sessionId, messageCount: this.shortTermMemory.length }
+                { sessionId, messageCount: this.shortTermMemory.length },
             );
 
             this.logger.error('Failed to save session to long-term memory', {
@@ -260,10 +260,10 @@ export class MemoryManager {
 
     /**
      * Prunes memory to enforce message and token limits.
-     * 
+     *
      * Removes oldest messages first until both limits are satisfied.
      * This method is called automatically after adding messages.
-     * 
+     *
      * @private
      */
     private pruneMemory(): void {
@@ -312,14 +312,14 @@ export class MemoryManager {
 
     /**
      * Estimates the total token count for an array of messages.
-     * 
+     *
      * Uses the TokenEstimator utility for consistent token counting.
      * This is a rough estimate and may not match exact model tokenization,
      * but is sufficient for memory management purposes.
-     * 
+     *
      * @param messages - Array of messages to estimate tokens for
      * @returns Approximate token count
-     * 
+     *
      * @private
      */
     private estimateTokens(messages: Message[]): number {
@@ -328,9 +328,9 @@ export class MemoryManager {
 
     /**
      * Gets the current estimated token count for conversation history.
-     * 
+     *
      * @returns Estimated token count for current conversation history
-     * 
+     *
      * @example
      * ```typescript
      * const currentTokens = memoryManager.getEstimatedTokens();

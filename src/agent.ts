@@ -1,6 +1,6 @@
 /**
  * Agent class - Main interface for the Agent Bedrock
- * 
+ *
  * This module provides the Agent class, which is the primary interface for
  * creating and managing conversational AI agents using AWS Bedrock.
  */
@@ -15,10 +15,7 @@ import {
 import { Logger } from '@aws-lambda-powertools/logger';
 import { Metrics, MetricUnit } from '@aws-lambda-powertools/metrics';
 import { Tracer } from '@aws-lambda-powertools/tracer';
-import type {
-    AgentConfig,
-    GuardrailConfig,
-} from './config/types.js';
+import type { AgentConfig, GuardrailConfig } from './config/types.js';
 import type {
     Message,
     ConverseInput,
@@ -62,14 +59,14 @@ import type { McpServerConfig, McpServerInfo, ResourceContent } from './mcp/type
 
 /**
  * Agent class - Main interface for creating conversational AI agents.
- * 
+ *
  * The Agent class orchestrates all framework functionality including:
  * - Bedrock API interactions
  * - Conversation memory management
  * - Tool execution
  * - Streaming responses
  * - Observability (logging, metrics, tracing)
- * 
+ *
  * @example
  * ```typescript
  * const agent = new Agent({
@@ -80,7 +77,7 @@ import type { McpServerConfig, McpServerInfo, ResourceContent } from './mcp/type
  *     maxTokens: 2048
  *   }
  * });
- * 
+ *
  * const response = await agent.converse({
  *   message: 'Hello, how can you help me?'
  * });
@@ -149,10 +146,10 @@ export class Agent {
 
     /**
      * Creates a new Agent instance.
-     * 
+     *
      * @param config - Agent configuration
      * @throws {ValidationError} If configuration is invalid
-     * 
+     *
      * @example
      * ```typescript
      * const agent = new Agent({
@@ -185,44 +182,48 @@ export class Agent {
         this.config = config;
 
         // Initialize AWS Powertools Logger
-        this.logger = config.logger || createLogger({
-            serviceName: config.name,
-            logLevel: (process.env.LOG_LEVEL as any) || 'INFO',
-            persistentLogAttributes: {
-                agentName: config.name,
-                modelId: config.modelId,
-            },
-        });
+        this.logger =
+            config.logger ||
+            createLogger({
+                serviceName: config.name,
+                logLevel: (process.env.LOG_LEVEL as any) || 'INFO',
+                persistentLogAttributes: {
+                    agentName: config.name,
+                    modelId: config.modelId,
+                },
+            });
 
         // Initialize AWS Powertools Metrics (if enabled)
         this.metrics = config.enableMetrics
             ? createMetrics({
-                serviceName: config.name,
-                defaultDimensions: {
-                    agentName: config.name,
-                    modelId: config.modelId,
-                },
-            })
+                  serviceName: config.name,
+                  defaultDimensions: {
+                      agentName: config.name,
+                      modelId: config.modelId,
+                  },
+              })
             : new Metrics({
-                namespace: 'BedrockAgents',
-                serviceName: config.name,
-            });
+                  namespace: 'BedrockAgents',
+                  serviceName: config.name,
+              });
 
         // Initialize AWS Powertools Tracer (if enabled)
         this.tracer = config.enableTracing
             ? createTracer({
-                serviceName: config.name,
-                captureHTTPsRequests: true,
-            })
+                  serviceName: config.name,
+                  captureHTTPsRequests: true,
+              })
             : new Tracer({
-                serviceName: config.name,
-                enabled: false,
-            });
+                  serviceName: config.name,
+                  enabled: false,
+              });
 
         // Initialize Bedrock client
-        this.bedrockClient = config.bedrockClient || new BedrockRuntimeClient({
-            region: config.region || process.env.AWS_REGION,
-        });
+        this.bedrockClient =
+            config.bedrockClient ||
+            new BedrockRuntimeClient({
+                region: config.region || process.env.AWS_REGION,
+            });
 
         // Initialize MemoryManager
         this.memoryManager = new MemoryManager(config.memory, this.logger);
@@ -235,15 +236,11 @@ export class Agent {
             config.tools || [],
             this.mcpClientManager,
             this.logger,
-            this.metrics
+            this.metrics,
         );
 
         // Initialize StreamHandler
-        this.streamHandler = new StreamHandler(
-            this.bedrockClient,
-            this.logger,
-            this.tracer
-        );
+        this.streamHandler = new StreamHandler(this.bedrockClient, this.logger, this.tracer);
 
         // Initialize RetryHandler
         this.retryHandler = new RetryHandler(
@@ -252,7 +249,7 @@ export class Agent {
                 baseDelay: 100,
                 maxDelay: 5000,
             },
-            this.logger
+            this.logger,
         );
 
         // Connect to MCP servers from config if provided
@@ -260,7 +257,7 @@ export class Agent {
         if (config.mcpServers && config.mcpServers.length > 0) {
             this.logger.info('Connecting to MCP servers from config', {
                 serverCount: config.mcpServers.length,
-                serverNames: config.mcpServers.map(s => s.name),
+                serverNames: config.mcpServers.map((s) => s.name),
             });
 
             // Store connection promises to await them later
@@ -301,22 +298,22 @@ export class Agent {
 
     /**
      * Conducts a conversation turn with the model (non-streaming).
-     * 
+     *
      * Processes a user message through the Bedrock API, handles tool use,
      * manages conversation history, and returns the assistant's response.
-     * 
+     *
      * @param input - Conversation input
      * @returns Promise resolving to conversation response
      * @throws {ValidationError} If input is invalid
      * @throws {APIError} If Bedrock API call fails
-     * 
+     *
      * @example
      * ```typescript
      * const response = await agent.converse({
      *   message: 'What is the weather in San Francisco?',
      *   sessionId: 'user-123'
      * });
-     * 
+     *
      * console.log(response.message);
      * console.log(`Used ${response.usage.totalTokens} tokens`);
      * ```
@@ -394,7 +391,7 @@ export class Agent {
 
     /**
      * Processes a conversation turn, handling tool use loops.
-     * 
+     *
      * @param input - Conversation input
      * @returns Promise resolving to conversation response
      * @private
@@ -416,13 +413,10 @@ export class Agent {
             const request = await this.buildConverseRequest(input);
 
             // Call Bedrock Converse API with retry logic
-            const response = await this.retryHandler.executeWithRetry(
-                async () => {
-                    const command = new ConverseCommand(request);
-                    return await this.bedrockClient.send(command);
-                },
-                'BedrockConverseAPI'
-            );
+            const response = await this.retryHandler.executeWithRetry(async () => {
+                const command = new ConverseCommand(request);
+                return await this.bedrockClient.send(command);
+            }, 'BedrockConverseAPI');
 
             // Accumulate token usage
             if (response.usage) {
@@ -495,17 +489,14 @@ export class Agent {
             maxIterations: maxToolUseIterations,
         });
 
-        throw new APIError(
-            'Maximum tool use iterations exceeded',
-            undefined,
-            undefined,
-            { maxIterations: maxToolUseIterations }
-        );
+        throw new APIError('Maximum tool use iterations exceeded', undefined, undefined, {
+            maxIterations: maxToolUseIterations,
+        });
     }
 
     /**
      * Ensures MCP connections are ready before using them.
-     * 
+     *
      * @private
      */
     private async ensureMcpReady(): Promise<void> {
@@ -517,7 +508,7 @@ export class Agent {
 
     /**
      * Collects all available tools (local and MCP) for the model.
-     * 
+     *
      * @returns Array of tool specifications
      * @private
      */
@@ -559,7 +550,7 @@ export class Agent {
         if (toolSpecs.length > 0) {
             this.logger.debug('Collected tools for model', {
                 totalTools: toolSpecs.length,
-                toolNames: toolSpecs.map(t => t.toolSpec.name),
+                toolNames: toolSpecs.map((t) => t.toolSpec.name),
             });
         }
 
@@ -568,7 +559,7 @@ export class Agent {
 
     /**
      * Builds a Bedrock Converse API request from conversation input.
-     * 
+     *
      * @param input - Conversation input
      * @returns Bedrock API request
      * @private
@@ -586,7 +577,7 @@ export class Agent {
 
         // Add system prompts if provided
         if (input.systemPrompts && input.systemPrompts.length > 0) {
-            request.system = input.systemPrompts.map(text => ({ text }));
+            request.system = input.systemPrompts.map((text) => ({ text }));
         }
 
         // Add model configuration
@@ -621,7 +612,7 @@ export class Agent {
 
     /**
      * Extracts tool uses from a Bedrock API response.
-     * 
+     *
      * @param response - Bedrock API response
      * @returns Array of tool use requests
      * @private
@@ -652,7 +643,7 @@ export class Agent {
 
     /**
      * Builds a ConverseResponse from Bedrock API response.
-     * 
+     *
      * @param response - Bedrock API response
      * @param usage - Accumulated token usage
      * @param toolCalls - All tool calls made during conversation
@@ -662,7 +653,7 @@ export class Agent {
     private buildConverseResponse(
         response: ConverseCommandOutput,
         usage: { inputTokens: number; outputTokens: number; totalTokens: number },
-        toolCalls: Array<{ toolUseId: string; name: string; input: any }>
+        toolCalls: Array<{ toolUseId: string; name: string; input: any }>,
     ): ConverseResponse {
         const stopReason = (response.stopReason as StopReason) || 'end_turn';
 
@@ -730,7 +721,7 @@ export class Agent {
 
     /**
      * Gets the fallback message to return when guardrail blocks content.
-     * 
+     *
      * @returns Fallback message text
      * @private
      */
@@ -740,7 +731,7 @@ export class Agent {
 
     /**
      * Normalizes message content to ContentBlock array.
-     * 
+     *
      * @param message - String or ContentBlock array
      * @returns Array of content blocks
      * @private
@@ -754,16 +745,16 @@ export class Agent {
 
     /**
      * Conducts a conversation turn with the model (streaming).
-     * 
+     *
      * Processes a user message through the Bedrock ConverseStream API,
      * yielding events as they arrive. Handles tool use, manages conversation
      * history, and provides real-time streaming responses.
-     * 
+     *
      * @param input - Conversation input
      * @yields Stream events as they arrive from the model
      * @throws {ValidationError} If input is invalid
      * @throws {StreamError} If streaming fails
-     * 
+     *
      * @example
      * ```typescript
      * for await (const event of agent.converseStream({
@@ -817,7 +808,11 @@ export class Agent {
 
             // Add metrics
             this.metrics.addMetric('StreamingConversationCompleted', MetricUnit.Count, 1);
-            this.metrics.addMetric('StreamingConversationLatency', MetricUnit.Milliseconds, latencyMs);
+            this.metrics.addMetric(
+                'StreamingConversationLatency',
+                MetricUnit.Milliseconds,
+                latencyMs,
+            );
 
             // Save long-term memory if sessionId provided
             if (input.sessionId && this.config.memory?.longTerm) {
@@ -850,7 +845,7 @@ export class Agent {
 
     /**
      * Processes a streaming conversation turn, handling tool use loops.
-     * 
+     *
      * @param input - Conversation input
      * @param startTime - Start timestamp for metrics
      * @yields Stream events as they arrive
@@ -858,7 +853,7 @@ export class Agent {
      */
     private async *processStreamingConversationTurn(
         input: ConverseInput,
-        startTime: number
+        startTime: number,
     ): AsyncGenerator<StreamEvent, void, unknown> {
         const maxToolUseIterations = 10; // Prevent infinite loops
         let iteration = 0;
@@ -942,15 +937,17 @@ export class Agent {
                         totalUsage.totalTokens += event.usage.totalTokens;
 
                         // Add token usage metrics
-                        this.metrics.addMetric('StreamingTokensUsed', MetricUnit.Count, event.usage.totalTokens);
+                        this.metrics.addMetric(
+                            'StreamingTokensUsed',
+                            MetricUnit.Count,
+                            event.usage.totalTokens,
+                        );
                     } else if (event.type === 'error') {
                         // Error event already yielded, will be thrown below
-                        throw new APIError(
-                            event.error,
-                            undefined,
-                            undefined,
-                            { code: event.code, details: event.details }
-                        );
+                        throw new APIError(event.error, undefined, undefined, {
+                            code: event.code,
+                            details: event.details,
+                        });
                     }
                 }
             } catch (error) {
@@ -985,7 +982,11 @@ export class Agent {
                 // Check if we have any text content, if not add fallback message
                 let hasTextContent = false;
                 for (const contentBlock of accumulatedContent) {
-                    if ('text' in contentBlock && contentBlock.text && contentBlock.text.trim().length > 0) {
+                    if (
+                        'text' in contentBlock &&
+                        contentBlock.text &&
+                        contentBlock.text.trim().length > 0
+                    ) {
                         hasTextContent = true;
                         break;
                     }
@@ -1083,23 +1084,22 @@ export class Agent {
                 code: 'MAX_ITERATIONS_EXCEEDED',
             } as StreamEvent;
 
-            throw new APIError(
-                'Maximum tool use iterations exceeded',
-                undefined,
-                undefined,
-                { maxIterations: maxToolUseIterations }
-            );
+            throw new APIError('Maximum tool use iterations exceeded', undefined, undefined, {
+                maxIterations: maxToolUseIterations,
+            });
         }
     }
 
     /**
      * Builds a Bedrock ConverseStream API request from conversation input.
-     * 
+     *
      * @param input - Conversation input
      * @returns Bedrock ConverseStream API request
      * @private
      */
-    private async buildConverseStreamRequest(input: ConverseInput): Promise<ConverseStreamCommandInput> {
+    private async buildConverseStreamRequest(
+        input: ConverseInput,
+    ): Promise<ConverseStreamCommandInput> {
         const request: any = {
             modelId: this.config.modelId,
             messages: this.conversationHistory as any,
@@ -1107,7 +1107,7 @@ export class Agent {
 
         // Add system prompts if provided
         if (input.systemPrompts && input.systemPrompts.length > 0) {
-            request.system = input.systemPrompts.map(text => ({ text }));
+            request.system = input.systemPrompts.map((text) => ({ text }));
         }
 
         // Add model configuration
@@ -1142,10 +1142,10 @@ export class Agent {
 
     /**
      * Clears the conversation history from short-term memory.
-     * 
+     *
      * This resets both the memory manager's internal state and the
      * agent's conversation history array. Long-term memory is not affected.
-     * 
+     *
      * @example
      * ```typescript
      * agent.clearMemory();
@@ -1165,12 +1165,12 @@ export class Agent {
 
     /**
      * Gets the current conversation history.
-     * 
+     *
      * Returns a copy of the conversation history to prevent external
      * modifications. Use clearMemory() to reset the history.
-     * 
+     *
      * @returns Array of messages in chronological order
-     * 
+     *
      * @example
      * ```typescript
      * const history = agent.getConversationHistory();
@@ -1184,14 +1184,14 @@ export class Agent {
 
     /**
      * Adds a system prompt to guide model behavior.
-     * 
+     *
      * System prompts are stored in the agent configuration and will be
      * included in all subsequent conversation turns. Multiple system prompts
      * can be added and will be sent in the order they were added.
-     * 
+     *
      * @param prompt - System prompt text
      * @throws {ValidationError} If prompt is invalid
-     * 
+     *
      * @example
      * ```typescript
      * agent.addSystemPrompt('You are a helpful customer support agent.');
@@ -1201,17 +1201,16 @@ export class Agent {
     addSystemPrompt(prompt: string): void {
         // Validate prompt
         if (!prompt || typeof prompt !== 'string') {
-            throw new ValidationError(
-                'System prompt must be a non-empty string',
-                { field: 'prompt', value: prompt }
-            );
+            throw new ValidationError('System prompt must be a non-empty string', {
+                field: 'prompt',
+                value: prompt,
+            });
         }
 
         if (prompt.trim().length === 0) {
-            throw new ValidationError(
-                'System prompt cannot be empty or whitespace only',
-                { field: 'prompt' }
-            );
+            throw new ValidationError('System prompt cannot be empty or whitespace only', {
+                field: 'prompt',
+            });
         }
 
         // Initialize systemPrompts array if it doesn't exist
@@ -1231,14 +1230,14 @@ export class Agent {
 
     /**
      * Updates the guardrail configuration.
-     * 
+     *
      * This replaces any existing guardrail configuration. The new guardrail
      * will be applied to all subsequent conversation turns. Pass null or
      * undefined to remove guardrail protection.
-     * 
+     *
      * @param guardrailConfig - New guardrail configuration
      * @throws {ValidationError} If guardrail configuration is invalid
-     * 
+     *
      * @example
      * ```typescript
      * agent.setGuardrail({
@@ -1246,7 +1245,7 @@ export class Agent {
      *   guardrailVersion: '1',
      *   trace: true
      * });
-     * 
+     *
      * // Remove guardrail
      * agent.setGuardrail(undefined);
      * ```
@@ -1277,16 +1276,16 @@ export class Agent {
 
     /**
      * Attaches a new MCP server to the Agent.
-     * 
+     *
      * Establishes a connection to the specified MCP server and makes its
      * tools and resources available to the Agent. The connection is established
      * asynchronously and the method will throw if connection fails.
-     * 
+     *
      * @param config - MCP server configuration
      * @throws {ValidationError} If configuration is invalid
      * @throws {Error} If a server with the same name is already connected
      * @throws {McpConnectionError} If connection to the server fails
-     * 
+     *
      * @example
      * ```typescript
      * await agent.attachMcpServer({
@@ -1336,14 +1335,14 @@ export class Agent {
 
     /**
      * Detaches an MCP server from the Agent.
-     * 
+     *
      * Closes the connection to the specified MCP server and removes its
      * tools and resources from the Agent. Any subsequent tool calls to
      * tools from this server will fail.
-     * 
+     *
      * @param name - Name of the MCP server to detach
      * @throws {Error} If no server with the specified name is connected
-     * 
+     *
      * @example
      * ```typescript
      * await agent.detachMcpServer('weather-service');
@@ -1352,17 +1351,16 @@ export class Agent {
     async detachMcpServer(name: string): Promise<void> {
         // Validate server name
         if (!name || typeof name !== 'string') {
-            throw new ValidationError(
-                'MCP server name must be a non-empty string',
-                { field: 'name', value: name }
-            );
+            throw new ValidationError('MCP server name must be a non-empty string', {
+                field: 'name',
+                value: name,
+            });
         }
 
         if (name.trim().length === 0) {
-            throw new ValidationError(
-                'MCP server name cannot be empty or whitespace only',
-                { field: 'name' }
-            );
+            throw new ValidationError('MCP server name cannot be empty or whitespace only', {
+                field: 'name',
+            });
         }
 
         this.logger.info('Detaching MCP server', {
@@ -1397,12 +1395,12 @@ export class Agent {
 
     /**
      * Lists all connected MCP servers.
-     * 
+     *
      * Returns information about all currently connected MCP servers including
      * their status, tool count, and resource count.
-     * 
+     *
      * @returns Array of MCP server information
-     * 
+     *
      * @example
      * ```typescript
      * const servers = agent.listMcpServers();
@@ -1428,15 +1426,15 @@ export class Agent {
 
     /**
      * Fetches resource content from an MCP server.
-     * 
+     *
      * Retrieves the content of a resource identified by its URI from the
      * appropriate MCP server. The resource can contain either text or binary data.
-     * 
+     *
      * @param uri - Resource URI
      * @returns Promise resolving to resource content
      * @throws {ValidationError} If URI is invalid
      * @throws {McpResourceError} If resource is not found or fetch fails
-     * 
+     *
      * @example
      * ```typescript
      * const resource = await agent.getMcpResource('file:///path/to/document.txt');
@@ -1450,17 +1448,16 @@ export class Agent {
     async getMcpResource(uri: string): Promise<ResourceContent> {
         // Validate URI
         if (!uri || typeof uri !== 'string') {
-            throw new ValidationError(
-                'Resource URI must be a non-empty string',
-                { field: 'uri', value: uri }
-            );
+            throw new ValidationError('Resource URI must be a non-empty string', {
+                field: 'uri',
+                value: uri,
+            });
         }
 
         if (uri.trim().length === 0) {
-            throw new ValidationError(
-                'Resource URI cannot be empty or whitespace only',
-                { field: 'uri' }
-            );
+            throw new ValidationError('Resource URI cannot be empty or whitespace only', {
+                field: 'uri',
+            });
         }
 
         this.logger.debug('Fetching MCP resource', {
@@ -1499,16 +1496,16 @@ export class Agent {
 
     /**
      * Cleans up Agent resources.
-     * 
+     *
      * Closes all MCP server connections and releases resources.
      * Should be called when the Agent is being disposed or is no longer needed.
-     * 
+     *
      * This method is safe to call multiple times.
-     * 
+     *
      * @example
      * ```typescript
      * const agent = new Agent(config);
-     * 
+     *
      * try {
      *   // Use the agent
      *   await agent.converse({ message: 'Hello' });
@@ -1548,7 +1545,7 @@ export class Agent {
 
     /**
      * Gets the agent name.
-     * 
+     *
      * @returns Agent name
      */
     getName(): string {
@@ -1557,7 +1554,7 @@ export class Agent {
 
     /**
      * Gets the model ID.
-     * 
+     *
      * @returns Model identifier
      */
     getModelId(): string {
@@ -1566,7 +1563,7 @@ export class Agent {
 
     /**
      * Gets the agent configuration.
-     * 
+     *
      * @returns Agent configuration (read-only copy)
      */
     getConfig(): Readonly<AgentConfig> {
@@ -1575,18 +1572,18 @@ export class Agent {
 
     /**
      * Creates an ImageContent block from raw bytes.
-     * 
+     *
      * @param options - Image creation options
      * @returns ImageContent block
      * @throws {ValidationError} If options are invalid
-     * 
+     *
      * @example
      * ```typescript
      * const imageContent = agent.createImageFromBytes({
      *   format: 'png',
      *   bytes: imageBuffer
      * });
-     * 
+     *
      * await agent.converse({
      *   message: [
      *     { text: 'What is in this image?' },
@@ -1601,18 +1598,18 @@ export class Agent {
 
     /**
      * Creates an ImageContent block from an S3 URI.
-     * 
+     *
      * @param options - Image creation options
      * @returns ImageContent block
      * @throws {ValidationError} If options are invalid
-     * 
+     *
      * @example
      * ```typescript
      * const imageContent = agent.createImageFromS3({
      *   format: 'jpeg',
      *   uri: 's3://my-bucket/images/photo.jpg'
      * });
-     * 
+     *
      * // With cross-account access
      * const imageContent = agent.createImageFromS3({
      *   format: 'png',
@@ -1627,11 +1624,11 @@ export class Agent {
 
     /**
      * Creates a DocumentContent block from raw bytes.
-     * 
+     *
      * @param options - Document creation options
      * @returns DocumentContent block
      * @throws {ValidationError} If options are invalid
-     * 
+     *
      * @example
      * ```typescript
      * const docContent = agent.createDocumentFromBytes({
@@ -1639,7 +1636,7 @@ export class Agent {
      *   name: 'report.pdf',
      *   bytes: pdfBuffer
      * });
-     * 
+     *
      * await agent.converse({
      *   message: [
      *     { text: 'Summarize this document' },
@@ -1654,11 +1651,11 @@ export class Agent {
 
     /**
      * Creates a DocumentContent block from an S3 URI.
-     * 
+     *
      * @param options - Document creation options
      * @returns DocumentContent block
      * @throws {ValidationError} If options are invalid
-     * 
+     *
      * @example
      * ```typescript
      * const docContent = agent.createDocumentFromS3({
@@ -1674,18 +1671,18 @@ export class Agent {
 
     /**
      * Creates a VideoContent block from raw bytes.
-     * 
+     *
      * @param options - Video creation options
      * @returns VideoContent block
      * @throws {ValidationError} If options are invalid
-     * 
+     *
      * @example
      * ```typescript
      * const videoContent = agent.createVideoFromBytes({
      *   format: 'mp4',
      *   bytes: videoBuffer
      * });
-     * 
+     *
      * await agent.converse({
      *   message: [
      *     { text: 'Describe what happens in this video' },
@@ -1700,11 +1697,11 @@ export class Agent {
 
     /**
      * Creates a VideoContent block from an S3 URI.
-     * 
+     *
      * @param options - Video creation options
      * @returns VideoContent block
      * @throws {ValidationError} If options are invalid
-     * 
+     *
      * @example
      * ```typescript
      * const videoContent = agent.createVideoFromS3({
@@ -1721,7 +1718,7 @@ export class Agent {
      * Internal method to ensure all initialized components are accessible.
      * This prevents TypeScript unused variable warnings for components
      * that will be used in future task implementations.
-     * 
+     *
      * @private
      * @internal
      */

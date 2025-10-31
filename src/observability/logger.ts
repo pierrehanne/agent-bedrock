@@ -1,6 +1,6 @@
 /**
  * Logger setup utilities for AWS Powertools Logger integration
- * 
+ *
  * This module provides utilities for creating and configuring AWS Powertools Logger
  * instances with sensible defaults for the Agent Bedrock.
  */
@@ -18,7 +18,7 @@ export interface LoggerConfig {
 
     /**
      * Log level for the logger.
-     * 
+     *
      * @default 'INFO' or value from LOG_LEVEL environment variable
      */
     logLevel?: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
@@ -30,7 +30,7 @@ export interface LoggerConfig {
 
     /**
      * Sample rate for debug logs (0-1).
-     * 
+     *
      * @default 0 (no sampling)
      */
     sampleRateValue?: number;
@@ -38,10 +38,10 @@ export interface LoggerConfig {
 
 /**
  * Creates a configured AWS Powertools Logger instance.
- * 
+ *
  * @param config - Logger configuration options
  * @returns Configured Logger instance
- * 
+ *
  * @example
  * ```typescript
  * const logger = createLogger({
@@ -66,20 +66,16 @@ export function createLogger(config: LoggerConfig): Logger {
  * Helper methods for common logging patterns in the Agent Framework.
  */
 export class LoggerHelper {
-    constructor(private logger: Logger) { }
+    constructor(private logger: Logger) {}
 
     /**
      * Logs agent initialization.
-     * 
+     *
      * @param agentName - Name of the agent
      * @param modelId - Model identifier
      * @param config - Additional configuration details
      */
-    logAgentInitialized(
-        agentName: string,
-        modelId: string,
-        config?: Record<string, any>
-    ): void {
+    logAgentInitialized(agentName: string, modelId: string, config?: Record<string, any>): void {
         this.logger.info('Agent initialized', {
             agentName,
             modelId,
@@ -89,7 +85,7 @@ export class LoggerHelper {
 
     /**
      * Logs the start of a conversation turn.
-     * 
+     *
      * @param sessionId - Optional session identifier
      * @param messageLength - Length of the user message
      */
@@ -102,7 +98,7 @@ export class LoggerHelper {
 
     /**
      * Logs the completion of a conversation turn.
-     * 
+     *
      * @param sessionId - Optional session identifier
      * @param responseLength - Length of the assistant response
      * @param tokensUsed - Number of tokens consumed
@@ -112,7 +108,7 @@ export class LoggerHelper {
         sessionId?: string,
         responseLength?: number,
         tokensUsed?: number,
-        latencyMs?: number
+        latencyMs?: number,
     ): void {
         this.logger.info('Conversation turn completed', {
             sessionId,
@@ -124,7 +120,7 @@ export class LoggerHelper {
 
     /**
      * Logs tool execution start.
-     * 
+     *
      * @param toolName - Name of the tool being executed
      * @param toolUseId - Unique identifier for this tool use
      */
@@ -137,16 +133,12 @@ export class LoggerHelper {
 
     /**
      * Logs successful tool execution.
-     * 
+     *
      * @param toolName - Name of the tool
      * @param toolUseId - Unique identifier for this tool use
      * @param latencyMs - Execution latency in milliseconds
      */
-    logToolExecutionSuccess(
-        toolName: string,
-        toolUseId: string,
-        latencyMs: number
-    ): void {
+    logToolExecutionSuccess(toolName: string, toolUseId: string, latencyMs: number): void {
         this.logger.info('Tool execution succeeded', {
             toolName,
             toolUseId,
@@ -156,16 +148,12 @@ export class LoggerHelper {
 
     /**
      * Logs tool execution failure.
-     * 
+     *
      * @param toolName - Name of the tool
      * @param toolUseId - Unique identifier for this tool use
      * @param error - Error that occurred
      */
-    logToolExecutionError(
-        toolName: string,
-        toolUseId: string,
-        error: Error
-    ): void {
+    logToolExecutionError(toolName: string, toolUseId: string, error: Error): void {
         this.logger.error('Tool execution failed', {
             toolName,
             toolUseId,
@@ -176,7 +164,7 @@ export class LoggerHelper {
 
     /**
      * Logs memory operations.
-     * 
+     *
      * @param operation - Type of memory operation
      * @param sessionId - Session identifier
      * @param messageCount - Number of messages in memory
@@ -184,7 +172,7 @@ export class LoggerHelper {
     logMemoryOperation(
         operation: 'load' | 'save' | 'clear' | 'prune',
         sessionId?: string,
-        messageCount?: number
+        messageCount?: number,
     ): void {
         this.logger.debug('Memory operation', {
             operation,
@@ -195,14 +183,11 @@ export class LoggerHelper {
 
     /**
      * Logs guardrail interventions.
-     * 
+     *
      * @param action - Guardrail action taken
      * @param details - Additional details about the intervention
      */
-    logGuardrailIntervention(
-        action: string,
-        details?: Record<string, any>
-    ): void {
+    logGuardrailIntervention(action: string, details?: Record<string, any>): void {
         this.logger.warn('Guardrail intervention', {
             action,
             ...details,
@@ -211,18 +196,13 @@ export class LoggerHelper {
 
     /**
      * Logs API retry attempts.
-     * 
+     *
      * @param attempt - Current retry attempt number
      * @param maxRetries - Maximum number of retries
      * @param error - Error that triggered the retry
      * @param delayMs - Delay before next retry in milliseconds
      */
-    logRetryAttempt(
-        attempt: number,
-        maxRetries: number,
-        error: Error,
-        delayMs: number
-    ): void {
+    logRetryAttempt(attempt: number, maxRetries: number, error: Error, delayMs: number): void {
         this.logger.warn('Retrying API call', {
             attempt,
             maxRetries,
@@ -233,7 +213,7 @@ export class LoggerHelper {
 
     /**
      * Logs stream events.
-     * 
+     *
      * @param eventType - Type of stream event
      * @param details - Additional event details
      */
