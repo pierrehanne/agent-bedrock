@@ -1,14 +1,23 @@
 /**
  * Agent Bedrock
  *
- * A JavaScript framework for building conversational AI agents with AWS Bedrock.
- * This framework provides a simplified interface for creating agents that leverage
- * the Bedrock Runtime ConverseStream API with built-in observability through AWS Powertools.
+ * A professional TypeScript framework for building conversational AI agents with AWS Bedrock.
+ * Provides a simplified interface for creating agents that leverage the Bedrock Runtime
+ * ConverseStream API with built-in observability through AWS Powertools.
  *
  * @packageDocumentation
+ * @module agent-bedrock
  */
 
-// Configuration types
+// ============================================================================
+// Core Agent
+// ============================================================================
+export { Agent } from './agent.js';
+export { default } from './agent.js';
+
+// ============================================================================
+// Configuration
+// ============================================================================
 export type {
     AgentConfig,
     ModelConfig,
@@ -17,9 +26,8 @@ export type {
     ShortTermMemoryConfig,
     LongTermMemoryConfig,
     RetryConfig,
-} from './config/types.js';
+} from './config/index.js';
 
-// Message and content types
 export type {
     Message,
     ContentBlock,
@@ -36,9 +44,12 @@ export type {
     TokenUsage,
     ToolCall,
     GuardrailAction,
-} from './config/message-types.js';
+} from './config/index.js';
 
-// Tool types
+// ============================================================================
+// Tools
+// ============================================================================
+export { ToolExecutor } from './tools/index.js';
 export type {
     ToolDefinition,
     JSONSchema,
@@ -48,9 +59,15 @@ export type {
     ToolChoice,
     ToolUse,
     ToolResult,
-} from './tools/types.js';
+} from './tools/index.js';
 
-// MCP types and classes
+// ============================================================================
+// Model Context Protocol (MCP)
+// ============================================================================
+export { McpClientManager, McpServerConnection } from './mcp/index.js';
+export { filterTools, hasFilterRules, validateToolFilter } from './mcp/index.js';
+export type { FilterResult } from './mcp/index.js';
+
 export type {
     McpServerConfig,
     McpAuthConfig,
@@ -61,14 +78,12 @@ export type {
     ResourceContent,
     McpServerInfo,
     ConnectionStatus,
-} from './mcp/types.js';
+} from './mcp/index.js';
 
-export { McpClientManager } from './mcp/client-manager.js';
-export { McpServerConnection } from './mcp/connection.js';
-export { filterTools, hasFilterRules, validateToolFilter } from './mcp/filters.js';
-export type { FilterResult } from './mcp/filters.js';
-
-// Stream types
+// ============================================================================
+// Streaming
+// ============================================================================
+export { StreamHandler } from './stream/index.js';
 export type {
     StreamEvent,
     MessageStartEvent,
@@ -81,25 +96,27 @@ export type {
     ContentDelta,
     StreamHandlerConfig,
     StreamState,
-} from './stream/types.js';
+} from './stream/index.js';
 
-// Memory types and classes
+// ============================================================================
+// Memory Management
+// ============================================================================
+export { MemoryManager } from './memory/index.js';
 export type {
     MemoryState,
     PruneOptions,
     PruneResult,
     MemoryOperationResult,
-} from './memory/types.js';
+} from './memory/index.js';
 
-export { MemoryManager } from './memory/manager.js';
+// ============================================================================
+// Observability
+// ============================================================================
+export { createLogger, createMetrics, createTracer } from './observability/index.js';
 
-// Tool executor
-export { ToolExecutor } from './tools/executor.js';
-
-// Stream handler
-export { StreamHandler } from './stream/handler.js';
-
-// Error types and classes
+// ============================================================================
+// Error Handling
+// ============================================================================
 export {
     ErrorCode,
     BedrockAgentError,
@@ -110,6 +127,10 @@ export {
     StreamError,
 } from './errors/index.js';
 
+// ============================================================================
+// Utilities
+// ============================================================================
+
 // Multimodal content helpers
 export {
     createImageFromBytes,
@@ -118,7 +139,7 @@ export {
     createDocumentFromS3,
     createVideoFromBytes,
     createVideoFromS3,
-} from './utils/multimodal.js';
+} from './utils/index.js';
 
 export type {
     ImageFromBytesOptions,
@@ -127,20 +148,26 @@ export type {
     DocumentFromS3Options,
     VideoFromBytesOptions,
     VideoFromS3Options,
-} from './utils/multimodal.js';
+} from './utils/index.js';
 
-// Token estimation utilities
+// Token estimation
 export {
     TokenEstimator,
     createTokenEstimator,
     estimateTextTokens,
     estimateMessageTokens,
-} from './utils/tokens.js';
+} from './utils/index.js';
 
-export type { TokenEstimationConfig } from './utils/tokens.js';
+export type { TokenEstimationConfig } from './utils/index.js';
 
-// Agent class - main interface
-export { Agent } from './agent.js';
+// Sanitization
+export { sanitizeString, sanitizeObject, sanitizeLogData, createSanitizer } from './utils/index.js';
+export type { SanitizeConfig } from './utils/index.js';
 
-// Default export
-export { default } from './agent.js';
+// Retry logic (if exported from utils)
+// export { withRetry, createRetryConfig } from './utils/index.js';
+
+// ============================================================================
+// Constants
+// ============================================================================
+export { DEFAULTS, MODELS, FORMATS, HTTP_STATUS } from './constants/index.js';

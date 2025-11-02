@@ -465,7 +465,7 @@ export class McpServerConnection {
             throw new McpConnectionError(this.config.name, 'Cannot list tools: not connected');
         }
 
-        return Array.from(this.tools.values());
+        return Promise.resolve(Array.from(this.tools.values()));
     }
 
     /**
@@ -591,7 +591,7 @@ export class McpServerConnection {
             throw new McpConnectionError(this.config.name, 'Cannot list resources: not connected');
         }
 
-        return Array.from(this.resources.values());
+        return Promise.resolve(Array.from(this.resources.values()));
     }
 
     /**
