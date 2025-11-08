@@ -1,23 +1,6 @@
-/**
- * Agent Bedrock
- *
- * A professional TypeScript framework for building conversational AI agents with AWS Bedrock.
- * Provides a simplified interface for creating agents that leverage the Bedrock Runtime
- * ConverseStream API with built-in observability through AWS Powertools.
- *
- * @packageDocumentation
- * @module agent-bedrock
- */
-
-// ============================================================================
-// Core Agent
-// ============================================================================
 export { Agent } from './agent.js';
 export { default } from './agent.js';
 
-// ============================================================================
-// Configuration
-// ============================================================================
 export type {
     AgentConfig,
     ModelConfig,
@@ -46,9 +29,6 @@ export type {
     GuardrailAction,
 } from './config/index.js';
 
-// ============================================================================
-// Tools
-// ============================================================================
 export { ToolExecutor } from './tools/index.js';
 export type {
     ToolDefinition,
@@ -61,9 +41,6 @@ export type {
     ToolResult,
 } from './tools/index.js';
 
-// ============================================================================
-// Model Context Protocol (MCP)
-// ============================================================================
 export { McpClientManager, McpServerConnection } from './mcp/index.js';
 export { filterTools, hasFilterRules, validateToolFilter } from './mcp/index.js';
 export type { FilterResult } from './mcp/index.js';
@@ -80,9 +57,6 @@ export type {
     ConnectionStatus,
 } from './mcp/index.js';
 
-// ============================================================================
-// Streaming
-// ============================================================================
 export { StreamHandler } from './stream/index.js';
 export type {
     StreamEvent,
@@ -98,9 +72,6 @@ export type {
     StreamState,
 } from './stream/index.js';
 
-// ============================================================================
-// Memory Management
-// ============================================================================
 export { MemoryManager } from './memory/index.js';
 export type {
     MemoryState,
@@ -109,14 +80,8 @@ export type {
     MemoryOperationResult,
 } from './memory/index.js';
 
-// ============================================================================
-// Observability
-// ============================================================================
 export { createLogger, createMetrics, createTracer } from './observability/index.js';
 
-// ============================================================================
-// Error Handling
-// ============================================================================
 export {
     ErrorCode,
     BedrockAgentError,
@@ -127,11 +92,6 @@ export {
     StreamError,
 } from './errors/index.js';
 
-// ============================================================================
-// Utilities
-// ============================================================================
-
-// Multimodal content helpers
 export {
     createImageFromBytes,
     createImageFromS3,
@@ -150,7 +110,6 @@ export type {
     VideoFromS3Options,
 } from './utils/index.js';
 
-// Token estimation
 export {
     TokenEstimator,
     createTokenEstimator,
@@ -160,14 +119,7 @@ export {
 
 export type { TokenEstimationConfig } from './utils/index.js';
 
-// Sanitization
 export { sanitizeString, sanitizeObject, sanitizeLogData, createSanitizer } from './utils/index.js';
 export type { SanitizeConfig } from './utils/index.js';
 
-// Retry logic (if exported from utils)
-// export { withRetry, createRetryConfig } from './utils/index.js';
-
-// ============================================================================
-// Constants
-// ============================================================================
 export { DEFAULTS, MODELS, FORMATS, HTTP_STATUS } from './constants/index.js';

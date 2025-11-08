@@ -34,8 +34,6 @@ export const MODELS = {
     NOVA_MICRO: 'eu.amazon.nova-micro-v1:0',
     NOVA_LITE: 'eu.amazon.nova-lite-v1:0',
     NOVA_PRO: 'eu.amazon.nova-pro-v1:0',
-    CLAUDE_3_SONNET: 'anthropic.claude-3-sonnet-20240229-v1:0',
-    CLAUDE_3_HAIKU: 'anthropic.claude-3-haiku-20240307-v1:0',
 } as const;
 
 /**

@@ -1,10 +1,3 @@
-/**
- * Agent class - Main interface for the Agent Bedrock
- *
- * This module provides the Agent class, which is the primary interface for
- * creating and managing conversational AI agents using AWS Bedrock.
- */
-
 import {
     BedrockRuntimeClient,
     ConverseCommand,
@@ -66,82 +59,19 @@ import type { McpServerConfig, McpServerInfo, ResourceContent } from './mcp/type
  * - Tool execution
  * - Streaming responses
  * - Observability (logging, metrics, tracing)
- *
- * @example
- * ```typescript
- * const agent = new Agent({
- *   name: 'customer-support',
- *   modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
- *   modelConfig: {
- *     temperature: 0.7,
- *     maxTokens: 2048
- *   }
- * });
- *
- * const response = await agent.converse({
- *   message: 'Hello, how can you help me?'
- * });
- * ```
  */
 export class Agent {
-    /**
-     * Agent configuration.
-     */
     private readonly config: AgentConfig;
-
-    /**
-     * AWS Powertools Logger instance.
-     */
     private readonly logger: Logger;
-
-    /**
-     * AWS Powertools Metrics instance.
-     */
     private readonly metrics: Metrics;
-
-    /**
-     * AWS Powertools Tracer instance.
-     */
     private readonly tracer: Tracer;
-
-    /**
-     * Bedrock Runtime client for API calls.
-     */
     private readonly bedrockClient: BedrockRuntimeClient;
-
-    /**
-     * Memory manager for conversation history.
-     */
     private readonly memoryManager: MemoryManager;
-
-    /**
-     * MCP Client Manager for managing MCP server connections.
-     */
     private readonly mcpClientManager: McpClientManager;
-
-    /**
-     * Promises for MCP server connections (to await before first use).
-     */
     private mcpConnectionPromises: Promise<void>[] = [];
-
-    /**
-     * Tool executor for handling tool invocations.
-     */
     private readonly toolExecutor: ToolExecutor;
-
-    /**
-     * Stream handler for processing streaming responses.
-     */
     private readonly streamHandler: StreamHandler;
-
-    /**
-     * Retry handler for API calls with exponential backoff.
-     */
     private readonly retryHandler: RetryHandler;
-
-    /**
-     * Current conversation history.
-     */
     private conversationHistory: Message[] = [];
 
     /**
@@ -149,39 +79,10 @@ export class Agent {
      *
      * @param config - Agent configuration
      * @throws {ValidationError} If configuration is invalid
-     *
-     * @example
-     * ```typescript
-     * const agent = new Agent({
-     *   name: 'my-agent',
-     *   modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
-     *   tools: [
-     *     {
-     *       name: 'get_weather',
-     *       description: 'Gets weather for a location',
-     *       inputSchema: {
-     *         type: 'object',
-     *         properties: {
-     *           location: { type: 'string' }
-     *         },
-     *         required: ['location']
-     *       },
-     *       handler: async (input) => {
-     *         return { temperature: 72, condition: 'sunny' };
-     *       }
-     *     }
-     *   ]
-     * });
-     * ```
      */
     constructor(config: AgentConfig) {
-        // Validate configuration
         InputValidator.validateAgentConfig(config);
-
-        // Store configuration
         this.config = config;
-
-        // Initialize AWS Powertools Logger
         this.logger =
             config.logger ||
             createLogger({
@@ -192,57 +93,41 @@ export class Agent {
                     modelId: config.modelId,
                 },
             });
-
-        // Initialize AWS Powertools Metrics (if enabled)
         this.metrics = config.enableMetrics
             ? createMetrics({
-                  serviceName: config.name,
-                  defaultDimensions: {
-                      agentName: config.name,
-                      modelId: config.modelId,
-                  },
-              })
+                serviceName: config.name,
+                defaultDimensions: {
+                    agentName: config.name,
+                    modelId: config.modelId,
+                },
+            })
             : new Metrics({
-                  namespace: 'BedrockAgents',
-                  serviceName: config.name,
-              });
-
-        // Initialize AWS Powertools Tracer (if enabled)
+                namespace: 'BedrockAgents',
+                serviceName: config.name,
+            });
         this.tracer = config.enableTracing
             ? createTracer({
-                  serviceName: config.name,
-                  captureHTTPsRequests: true,
-              })
+                serviceName: config.name,
+                captureHTTPsRequests: true,
+            })
             : new Tracer({
-                  serviceName: config.name,
-                  enabled: false,
-              });
-
-        // Initialize Bedrock client
+                serviceName: config.name,
+                enabled: false,
+            });
         this.bedrockClient =
             config.bedrockClient ||
             new BedrockRuntimeClient({
                 region: config.region || process.env.AWS_REGION,
             });
-
-        // Initialize MemoryManager
         this.memoryManager = new MemoryManager(config.memory, this.logger);
-
-        // Initialize MCP Client Manager
         this.mcpClientManager = new McpClientManager(this.logger, this.metrics, this.tracer);
-
-        // Initialize ToolExecutor with MCP Client Manager
         this.toolExecutor = new ToolExecutor(
             config.tools || [],
             this.mcpClientManager,
             this.logger,
             this.metrics,
         );
-
-        // Initialize StreamHandler
         this.streamHandler = new StreamHandler(this.bedrockClient, this.logger, this.tracer);
-
-        // Initialize RetryHandler
         this.retryHandler = new RetryHandler(
             {
                 maxRetries: 3,
@@ -253,7 +138,6 @@ export class Agent {
         );
 
         // Connect to MCP servers from config if provided
-        // Do this asynchronously without blocking Agent initialization
         if (config.mcpServers && config.mcpServers.length > 0) {
             this.logger.info('Connecting to MCP servers from config', {
                 serverCount: config.mcpServers.length,
@@ -270,7 +154,6 @@ export class Agent {
                         error: (error as Error).message,
                         message: 'Agent will continue without this MCP server',
                     });
-                    // Don't throw - allow Agent to initialize even if MCP connection fails
                 }
             });
         }
@@ -306,17 +189,6 @@ export class Agent {
      * @returns Promise resolving to conversation response
      * @throws {ValidationError} If input is invalid
      * @throws {APIError} If Bedrock API call fails
-     *
-     * @example
-     * ```typescript
-     * const response = await agent.converse({
-     *   message: 'What is the weather in San Francisco?',
-     *   sessionId: 'user-123'
-     * });
-     *
-     * console.log(response.message);
-     * console.log(`Used ${response.usage.totalTokens} tokens`);
-     * ```
      */
     async converse(input: ConverseInput): Promise<ConverseResponse> {
         const startTime = Date.now();
@@ -397,7 +269,7 @@ export class Agent {
      * @private
      */
     private async processConversationTurn(input: ConverseInput): Promise<ConverseResponse> {
-        const maxToolUseIterations = 10; // Prevent infinite loops
+        const maxToolUseIterations = 20;
         let iteration = 0;
         const totalUsage = {
             inputTokens: 0,
@@ -434,7 +306,6 @@ export class Agent {
                 const toolUses = this.extractToolUses(response);
 
                 if (toolUses.length === 0) {
-                    // No tool uses found, treat as end_turn
                     return this.buildConverseResponse(response, totalUsage, allToolCalls);
                 }
 
@@ -469,7 +340,6 @@ export class Agent {
                 this.memoryManager.addMessage(toolResultMessage);
                 this.conversationHistory = this.memoryManager.getMessages();
 
-                // Continue loop to get model's response to tool results
                 continue;
             } else {
                 // Conversation complete
@@ -502,7 +372,7 @@ export class Agent {
     private async ensureMcpReady(): Promise<void> {
         if (this.mcpConnectionPromises.length > 0) {
             await Promise.all(this.mcpConnectionPromises);
-            this.mcpConnectionPromises = []; // Clear after first use
+            this.mcpConnectionPromises = [];
         }
     }
 
@@ -754,18 +624,6 @@ export class Agent {
      * @yields Stream events as they arrive from the model
      * @throws {ValidationError} If input is invalid
      * @throws {StreamError} If streaming fails
-     *
-     * @example
-     * ```typescript
-     * for await (const event of agent.converseStream({
-     *   message: 'Tell me a story',
-     *   sessionId: 'user-123'
-     * })) {
-     *   if (event.type === 'contentBlockDelta' && 'text' in event.delta) {
-     *     process.stdout.write(event.delta.text);
-     *   }
-     * }
-     * ```
      */
     async *converseStream(input: ConverseInput): AsyncGenerator<StreamEvent, void, unknown> {
         const startTime = Date.now();
@@ -1028,7 +886,6 @@ export class Agent {
                 }
 
                 if (toolUses.length === 0) {
-                    // No tool uses found, treat as end_turn
                     break;
                 }
 
@@ -1046,7 +903,6 @@ export class Agent {
                     });
 
                     // Yield a custom event to inform caller about tool execution
-                    // Note: This is not a standard StreamEvent type, but provides visibility
                     yield {
                         type: 'metadata',
                         usage: { inputTokens: 0, outputTokens: 0, totalTokens: 0 },
@@ -1064,10 +920,8 @@ export class Agent {
                 this.memoryManager.addMessage(toolResultMessage);
                 this.conversationHistory = this.memoryManager.getMessages();
 
-                // Continue loop to get model's response to tool results
                 continue;
             } else {
-                // Conversation complete
                 break;
             }
         }
@@ -1145,12 +999,6 @@ export class Agent {
      *
      * This resets both the memory manager's internal state and the
      * agent's conversation history array. Long-term memory is not affected.
-     *
-     * @example
-     * ```typescript
-     * agent.clearMemory();
-     * console.log('Conversation history cleared');
-     * ```
      */
     clearMemory(): void {
         this.memoryManager.clear();
@@ -1170,12 +1018,6 @@ export class Agent {
      * modifications. Use clearMemory() to reset the history.
      *
      * @returns Array of messages in chronological order
-     *
-     * @example
-     * ```typescript
-     * const history = agent.getConversationHistory();
-     * console.log(`Conversation has ${history.length} messages`);
-     * ```
      */
     getConversationHistory(): Message[] {
         // Return a deep copy to prevent external modifications
@@ -1191,12 +1033,6 @@ export class Agent {
      *
      * @param prompt - System prompt text
      * @throws {ValidationError} If prompt is invalid
-     *
-     * @example
-     * ```typescript
-     * agent.addSystemPrompt('You are a helpful customer support agent.');
-     * agent.addSystemPrompt('Always be polite and professional.');
-     * ```
      */
     addSystemPrompt(prompt: string): void {
         // Validate prompt
@@ -1237,18 +1073,6 @@ export class Agent {
      *
      * @param guardrailConfig - New guardrail configuration
      * @throws {ValidationError} If guardrail configuration is invalid
-     *
-     * @example
-     * ```typescript
-     * agent.setGuardrail({
-     *   guardrailId: 'abc123',
-     *   guardrailVersion: '1',
-     *   trace: true
-     * });
-     *
-     * // Remove guardrail
-     * agent.setGuardrail(undefined);
-     * ```
      */
     setGuardrail(guardrailConfig: GuardrailConfig | undefined): void {
         // Validate guardrail config if provided
@@ -1285,18 +1109,6 @@ export class Agent {
      * @throws {ValidationError} If configuration is invalid
      * @throws {Error} If a server with the same name is already connected
      * @throws {McpConnectionError} If connection to the server fails
-     *
-     * @example
-     * ```typescript
-     * await agent.attachMcpServer({
-     *   name: 'weather-service',
-     *   url: 'https://weather-mcp.example.com/mcp',
-     *   authentication: {
-     *     type: 'bearer',
-     *     token: process.env.WEATHER_API_TOKEN
-     *   }
-     * });
-     * ```
      */
     async attachMcpServer(config: McpServerConfig): Promise<void> {
         // Validate MCP server configuration
@@ -1342,11 +1154,6 @@ export class Agent {
      *
      * @param name - Name of the MCP server to detach
      * @throws {Error} If no server with the specified name is connected
-     *
-     * @example
-     * ```typescript
-     * await agent.detachMcpServer('weather-service');
-     * ```
      */
     async detachMcpServer(name: string): Promise<void> {
         // Validate server name
@@ -1400,14 +1207,6 @@ export class Agent {
      * their status, tool count, and resource count.
      *
      * @returns Array of MCP server information
-     *
-     * @example
-     * ```typescript
-     * const servers = agent.listMcpServers();
-     * for (const server of servers) {
-     *   console.log(`${server.name}: ${server.status} (${server.toolCount} tools)`);
-     * }
-     * ```
      */
     listMcpServers(): McpServerInfo[] {
         this.logger.debug('Listing MCP servers', {
@@ -1434,16 +1233,6 @@ export class Agent {
      * @returns Promise resolving to resource content
      * @throws {ValidationError} If URI is invalid
      * @throws {McpResourceError} If resource is not found or fetch fails
-     *
-     * @example
-     * ```typescript
-     * const resource = await agent.getMcpResource('file:///path/to/document.txt');
-     * if (resource.text) {
-     *   console.log('Text content:', resource.text);
-     * } else if (resource.blob) {
-     *   console.log('Binary content length:', resource.blob.length);
-     * }
-     * ```
      */
     async getMcpResource(uri: string): Promise<ResourceContent> {
         // Validate URI
@@ -1501,19 +1290,6 @@ export class Agent {
      * Should be called when the Agent is being disposed or is no longer needed.
      *
      * This method is safe to call multiple times.
-     *
-     * @example
-     * ```typescript
-     * const agent = new Agent(config);
-     *
-     * try {
-     *   // Use the agent
-     *   await agent.converse({ message: 'Hello' });
-     * } finally {
-     *   // Clean up resources
-     *   await agent.cleanup();
-     * }
-     * ```
      */
     async cleanup(): Promise<void> {
         this.logger.info('Cleaning up Agent resources', {
@@ -1576,21 +1352,6 @@ export class Agent {
      * @param options - Image creation options
      * @returns ImageContent block
      * @throws {ValidationError} If options are invalid
-     *
-     * @example
-     * ```typescript
-     * const imageContent = agent.createImageFromBytes({
-     *   format: 'png',
-     *   bytes: imageBuffer
-     * });
-     *
-     * await agent.converse({
-     *   message: [
-     *     { text: 'What is in this image?' },
-     *     imageContent
-     *   ]
-     * });
-     * ```
      */
     createImageFromBytes(options: ImageFromBytesOptions): ImageContent {
         return createImageFromBytes(options);
@@ -1602,22 +1363,7 @@ export class Agent {
      * @param options - Image creation options
      * @returns ImageContent block
      * @throws {ValidationError} If options are invalid
-     *
-     * @example
-     * ```typescript
-     * const imageContent = agent.createImageFromS3({
-     *   format: 'jpeg',
-     *   uri: 's3://my-bucket/images/photo.jpg'
-     * });
-     *
-     * // With cross-account access
-     * const imageContent = agent.createImageFromS3({
-     *   format: 'png',
-     *   uri: 's3://other-bucket/image.png',
-     *   bucketOwner: '123456789012'
-     * });
-     * ```
-     */
+    */
     createImageFromS3(options: ImageFromS3Options): ImageContent {
         return createImageFromS3(options);
     }
@@ -1628,22 +1374,6 @@ export class Agent {
      * @param options - Document creation options
      * @returns DocumentContent block
      * @throws {ValidationError} If options are invalid
-     *
-     * @example
-     * ```typescript
-     * const docContent = agent.createDocumentFromBytes({
-     *   format: 'pdf',
-     *   name: 'report.pdf',
-     *   bytes: pdfBuffer
-     * });
-     *
-     * await agent.converse({
-     *   message: [
-     *     { text: 'Summarize this document' },
-     *     docContent
-     *   ]
-     * });
-     * ```
      */
     createDocumentFromBytes(options: DocumentFromBytesOptions): DocumentContent {
         return createDocumentFromBytes(options);
@@ -1655,15 +1385,6 @@ export class Agent {
      * @param options - Document creation options
      * @returns DocumentContent block
      * @throws {ValidationError} If options are invalid
-     *
-     * @example
-     * ```typescript
-     * const docContent = agent.createDocumentFromS3({
-     *   format: 'pdf',
-     *   name: 'report.pdf',
-     *   uri: 's3://my-bucket/documents/report.pdf'
-     * });
-     * ```
      */
     createDocumentFromS3(options: DocumentFromS3Options): DocumentContent {
         return createDocumentFromS3(options);
@@ -1675,21 +1396,6 @@ export class Agent {
      * @param options - Video creation options
      * @returns VideoContent block
      * @throws {ValidationError} If options are invalid
-     *
-     * @example
-     * ```typescript
-     * const videoContent = agent.createVideoFromBytes({
-     *   format: 'mp4',
-     *   bytes: videoBuffer
-     * });
-     *
-     * await agent.converse({
-     *   message: [
-     *     { text: 'Describe what happens in this video' },
-     *     videoContent
-     *   ]
-     * });
-     * ```
      */
     createVideoFromBytes(options: VideoFromBytesOptions): VideoContent {
         return createVideoFromBytes(options);
@@ -1701,14 +1407,6 @@ export class Agent {
      * @param options - Video creation options
      * @returns VideoContent block
      * @throws {ValidationError} If options are invalid
-     *
-     * @example
-     * ```typescript
-     * const videoContent = agent.createVideoFromS3({
-     *   format: 'mp4',
-     *   uri: 's3://my-bucket/videos/demo.mp4'
-     * });
-     * ```
      */
     createVideoFromS3(options: VideoFromS3Options): VideoContent {
         return createVideoFromS3(options);
