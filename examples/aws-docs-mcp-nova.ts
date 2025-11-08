@@ -18,14 +18,12 @@ async function basicAwsDocSearch() {
             {
                 name: 'aws-knowledge-mcp-server',
                 url: 'https://knowledge-mcp.global.api.aws',
-                description: 'AWS Documentation search and access',
-                transport: 'streamable-http', // AWS MCP servers use streamable-HTTP
+                transport: 'streamable-http',
             },
             {
                 name: 'microsoft.docs.mcp',
                 url: 'https://learn.microsoft.com/api/mcp',
-                description: 'Microsoft Azure Documentation reader',
-                transport: 'streamable-http', // AWS MCP servers use streamable-HTTP
+                transport: 'streamable-http',
             },
         ],
         memory: {

@@ -1,10 +1,3 @@
-/**
- * Multimodal content helper utilities.
- *
- * This module provides helper functions for creating multimodal content blocks
- * including images, documents, and videos from various sources.
- */
-
 import type {
     ImageContent,
     DocumentContent,
@@ -13,139 +6,47 @@ import type {
 } from '../config/message-types.js';
 import { ValidationError } from '../errors/index.js';
 
-/**
- * Options for creating image content from bytes.
- */
 export interface ImageFromBytesOptions {
-    /**
-     * Image format.
-     */
     format: 'png' | 'jpeg' | 'gif' | 'webp';
-
-    /**
-     * Raw image bytes.
-     */
     bytes: Uint8Array;
 }
 
-/**
- * Options for creating image content from S3.
- */
 export interface ImageFromS3Options {
-    /**
-     * Image format.
-     */
     format: 'png' | 'jpeg' | 'gif' | 'webp';
-
-    /**
-     * S3 URI in format s3://bucket-name/key.
-     */
+    /** S3 URI in format s3://bucket-name/key */
     uri: string;
-
-    /**
-     * Optional AWS account ID of the bucket owner.
-     * Required for cross-account access.
-     */
+    /** AWS account ID of bucket owner. Required for cross-account access. */
     bucketOwner?: string;
 }
 
-/**
- * Options for creating document content from bytes.
- */
 export interface DocumentFromBytesOptions {
-    /**
-     * Document format.
-     */
     format: 'pdf' | 'csv' | 'doc' | 'docx' | 'xls' | 'xlsx' | 'html' | 'txt' | 'md';
-
-    /**
-     * Document name for reference.
-     */
     name: string;
-
-    /**
-     * Raw document bytes.
-     */
     bytes: Uint8Array;
 }
 
-/**
- * Options for creating document content from S3.
- */
 export interface DocumentFromS3Options {
-    /**
-     * Document format.
-     */
     format: 'pdf' | 'csv' | 'doc' | 'docx' | 'xls' | 'xlsx' | 'html' | 'txt' | 'md';
-
-    /**
-     * Document name for reference.
-     */
     name: string;
-
-    /**
-     * S3 URI in format s3://bucket-name/key.
-     */
+    /** S3 URI in format s3://bucket-name/key */
     uri: string;
-
-    /**
-     * Optional AWS account ID of the bucket owner.
-     * Required for cross-account access.
-     */
+    /** AWS account ID of bucket owner. Required for cross-account access. */
     bucketOwner?: string;
 }
 
-/**
- * Options for creating video content from bytes.
- */
 export interface VideoFromBytesOptions {
-    /**
-     * Video format.
-     */
     format: 'mp4' | 'mov' | 'avi' | 'flv' | 'mkv' | 'webm';
-
-    /**
-     * Raw video bytes.
-     */
     bytes: Uint8Array;
 }
 
-/**
- * Options for creating video content from S3.
- */
 export interface VideoFromS3Options {
-    /**
-     * Video format.
-     */
     format: 'mp4' | 'mov' | 'avi' | 'flv' | 'mkv' | 'webm';
-
-    /**
-     * S3 URI in format s3://bucket-name/key.
-     */
+    /** S3 URI in format s3://bucket-name/key */
     uri: string;
-
-    /**
-     * Optional AWS account ID of the bucket owner.
-     * Required for cross-account access.
-     */
+    /** AWS account ID of bucket owner. Required for cross-account access. */
     bucketOwner?: string;
 }
 
-/**
- * Creates an ImageContent block from raw bytes.
- *
- * @param options - Image creation options
- * @returns ImageContent block
- * @throws {ValidationError} If options are invalid
- *
- * @example
- * ```typescript
- * const imageContent = createImageFromBytes({
- *   format: 'png',
- *   bytes: imageBuffer
- * });
- * ```
- */
 export function createImageFromBytes(options: ImageFromBytesOptions): ImageContent {
     // Validate format
     const validFormats = ['png', 'jpeg', 'gif', 'webp'];
@@ -178,28 +79,6 @@ export function createImageFromBytes(options: ImageFromBytesOptions): ImageConte
     };
 }
 
-/**
- * Creates an ImageContent block from an S3 URI.
- *
- * @param options - Image creation options
- * @returns ImageContent block
- * @throws {ValidationError} If options are invalid
- *
- * @example
- * ```typescript
- * const imageContent = createImageFromS3({
- *   format: 'jpeg',
- *   uri: 's3://my-bucket/images/photo.jpg'
- * });
- *
- * // With cross-account access
- * const imageContent = createImageFromS3({
- *   format: 'png',
- *   uri: 's3://other-bucket/image.png',
- *   bucketOwner: '123456789012'
- * });
- * ```
- */
 export function createImageFromS3(options: ImageFromS3Options): ImageContent {
     // Validate format
     const validFormats = ['png', 'jpeg', 'gif', 'webp'];
@@ -223,22 +102,6 @@ export function createImageFromS3(options: ImageFromS3Options): ImageContent {
     };
 }
 
-/**
- * Creates a DocumentContent block from raw bytes.
- *
- * @param options - Document creation options
- * @returns DocumentContent block
- * @throws {ValidationError} If options are invalid
- *
- * @example
- * ```typescript
- * const docContent = createDocumentFromBytes({
- *   format: 'pdf',
- *   name: 'report.pdf',
- *   bytes: pdfBuffer
- * });
- * ```
- */
 export function createDocumentFromBytes(options: DocumentFromBytesOptions): DocumentContent {
     // Validate format
     const validFormats = ['pdf', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'html', 'txt', 'md'];
@@ -286,30 +149,6 @@ export function createDocumentFromBytes(options: DocumentFromBytesOptions): Docu
     };
 }
 
-/**
- * Creates a DocumentContent block from an S3 URI.
- *
- * @param options - Document creation options
- * @returns DocumentContent block
- * @throws {ValidationError} If options are invalid
- *
- * @example
- * ```typescript
- * const docContent = createDocumentFromS3({
- *   format: 'pdf',
- *   name: 'report.pdf',
- *   uri: 's3://my-bucket/documents/report.pdf'
- * });
- *
- * // With cross-account access
- * const docContent = createDocumentFromS3({
- *   format: 'xlsx',
- *   name: 'data.xlsx',
- *   uri: 's3://other-bucket/data.xlsx',
- *   bucketOwner: '123456789012'
- * });
- * ```
- */
 export function createDocumentFromS3(options: DocumentFromS3Options): DocumentContent {
     // Validate format
     const validFormats = ['pdf', 'csv', 'doc', 'docx', 'xls', 'xlsx', 'html', 'txt', 'md'];
@@ -348,21 +187,6 @@ export function createDocumentFromS3(options: DocumentFromS3Options): DocumentCo
     };
 }
 
-/**
- * Creates a VideoContent block from raw bytes.
- *
- * @param options - Video creation options
- * @returns VideoContent block
- * @throws {ValidationError} If options are invalid
- *
- * @example
- * ```typescript
- * const videoContent = createVideoFromBytes({
- *   format: 'mp4',
- *   bytes: videoBuffer
- * });
- * ```
- */
 export function createVideoFromBytes(options: VideoFromBytesOptions): VideoContent {
     // Validate format
     const validFormats = ['mp4', 'mov', 'avi', 'flv', 'mkv', 'webm'];
@@ -395,28 +219,6 @@ export function createVideoFromBytes(options: VideoFromBytesOptions): VideoConte
     };
 }
 
-/**
- * Creates a VideoContent block from an S3 URI.
- *
- * @param options - Video creation options
- * @returns VideoContent block
- * @throws {ValidationError} If options are invalid
- *
- * @example
- * ```typescript
- * const videoContent = createVideoFromS3({
- *   format: 'mp4',
- *   uri: 's3://my-bucket/videos/demo.mp4'
- * });
- *
- * // With cross-account access
- * const videoContent = createVideoFromS3({
- *   format: 'webm',
- *   uri: 's3://other-bucket/video.webm',
- *   bucketOwner: '123456789012'
- * });
- * ```
- */
 export function createVideoFromS3(options: VideoFromS3Options): VideoContent {
     // Validate format
     const validFormats = ['mp4', 'mov', 'avi', 'flv', 'mkv', 'webm'];
@@ -440,15 +242,6 @@ export function createVideoFromS3(options: VideoFromS3Options): VideoContent {
     };
 }
 
-/**
- * Creates and validates an S3Location object.
- *
- * @param uri - S3 URI in format s3://bucket-name/key
- * @param bucketOwner - Optional AWS account ID of the bucket owner
- * @returns S3Location object
- * @throws {ValidationError} If URI is invalid
- * @private
- */
 function createS3Location(uri: string, bucketOwner?: string): S3Location {
     // Validate URI
     if (!uri || typeof uri !== 'string') {

@@ -1,13 +1,3 @@
-/**
- * Error classes and types for the Agent Bedrock.
- *
- * This module provides a comprehensive error hierarchy for handling
- * various failure scenarios in the framework.
- */
-
-/**
- * Error codes for different failure scenarios.
- */
 export enum ErrorCode {
     // Validation errors (1xxx)
     VALIDATION_ERROR = 'VALIDATION_ERROR',
@@ -55,36 +45,10 @@ export enum ErrorCode {
     INITIALIZATION_ERROR = 'INITIALIZATION_ERROR',
 }
 
-/**
- * Base error class for all Agent Bedrock errors.
- *
- * @example
- * ```typescript
- * throw new BedrockAgentError(
- *   'Configuration validation failed',
- *   ErrorCode.INVALID_CONFIG
- * );
- * ```
- */
 export class BedrockAgentError extends Error {
-    /**
-     * Error code for programmatic error handling.
-     */
     public readonly code: ErrorCode;
-
-    /**
-     * Original error that caused this error (if any).
-     */
     public readonly cause?: Error;
-
-    /**
-     * Additional context about the error.
-     */
     public readonly context?: Record<string, any>;
-
-    /**
-     * Timestamp when the error occurred.
-     */
     public readonly timestamp: Date;
 
     constructor(
@@ -106,9 +70,6 @@ export class BedrockAgentError extends Error {
         }
     }
 
-    /**
-     * Convert error to JSON for logging.
-     */
     toJSON(): Record<string, any> {
         return {
             name: this.name,
@@ -119,25 +80,14 @@ export class BedrockAgentError extends Error {
             stack: this.stack,
             cause: this.cause
                 ? {
-                      name: this.cause.name,
-                      message: this.cause.message,
-                  }
+                    name: this.cause.name,
+                    message: this.cause.message,
+                }
                 : undefined,
         };
     }
 }
 
-/**
- * Error thrown when input validation fails.
- *
- * @example
- * ```typescript
- * throw new ValidationError(
- *   'modelId is required',
- *   { field: 'modelId' }
- * );
- * ```
- */
 export class ValidationError extends BedrockAgentError {
     constructor(message: string, context?: Record<string, any>, cause?: Error) {
         super(message, ErrorCode.VALIDATION_ERROR, cause, context);
@@ -145,28 +95,8 @@ export class ValidationError extends BedrockAgentError {
     }
 }
 
-/**
- * Error thrown when Bedrock API calls fail.
- *
- * @example
- * ```typescript
- * throw new APIError(
- *   'Bedrock API call failed',
- *   429,
- *   originalError,
- *   { modelId: 'claude-3' }
- * );
- * ```
- */
 export class APIError extends BedrockAgentError {
-    /**
-     * HTTP status code from the API response.
-     */
     public readonly statusCode?: number;
-
-    /**
-     * Whether this error is retryable.
-     */
     public readonly retryable: boolean;
 
     constructor(
@@ -182,9 +112,6 @@ export class APIError extends BedrockAgentError {
         this.retryable = APIError.isRetryable(statusCode);
     }
 
-    /**
-     * Determine error code based on status code.
-     */
     private static getErrorCode(statusCode?: number): ErrorCode {
         if (!statusCode) return ErrorCode.API_ERROR;
 
@@ -204,31 +131,13 @@ export class APIError extends BedrockAgentError {
         }
     }
 
-    /**
-     * Determine if error is retryable based on status code.
-     */
     private static isRetryable(statusCode?: number): boolean {
         if (!statusCode) return false;
         return statusCode === 429 || statusCode === 503 || statusCode === 504;
     }
 }
 
-/**
- * Error thrown when tool execution fails.
- *
- * @example
- * ```typescript
- * throw new ToolExecutionError(
- *   'get_weather',
- *   'API key not configured',
- *   originalError
- * );
- * ```
- */
 export class ToolExecutionError extends BedrockAgentError {
-    /**
-     * Name of the tool that failed.
-     */
     public readonly toolName: string;
 
     constructor(toolName: string, message: string, cause?: Error, context?: Record<string, any>) {
@@ -243,18 +152,6 @@ export class ToolExecutionError extends BedrockAgentError {
     }
 }
 
-/**
- * Error thrown when memory operations fail.
- *
- * @example
- * ```typescript
- * throw new MemoryError(
- *   'Failed to fetch conversation history',
- *   ErrorCode.MEMORY_FETCH_ERROR,
- *   originalError
- * );
- * ```
- */
 export class MemoryError extends BedrockAgentError {
     constructor(
         message: string,
@@ -267,17 +164,6 @@ export class MemoryError extends BedrockAgentError {
     }
 }
 
-/**
- * Error thrown when streaming operations fail.
- *
- * @example
- * ```typescript
- * throw new StreamError(
- *   'Stream interrupted unexpectedly',
- *   ErrorCode.STREAM_INTERRUPTED
- * );
- * ```
- */
 export class StreamError extends BedrockAgentError {
     constructor(
         message: string,
@@ -290,27 +176,8 @@ export class StreamError extends BedrockAgentError {
     }
 }
 
-/**
- * Error thrown when MCP connection operations fail.
- *
- * @example
- * ```typescript
- * throw new McpConnectionError(
- *   'weather-service',
- *   'Failed to connect to MCP server',
- *   originalError
- * );
- * ```
- */
 export class McpConnectionError extends BedrockAgentError {
-    /**
-     * Name of the MCP server that failed.
-     */
     public readonly serverName: string;
-
-    /**
-     * Operation that was being performed when the error occurred.
-     */
     public readonly operation?: string;
 
     constructor(serverName: string, message: string, cause?: Error, context?: Record<string, any>) {
@@ -326,28 +193,8 @@ export class McpConnectionError extends BedrockAgentError {
     }
 }
 
-/**
- * Error thrown when MCP tool execution fails.
- *
- * @example
- * ```typescript
- * throw new McpToolExecutionError(
- *   'weather-service',
- *   'get_weather',
- *   'API key not configured',
- *   originalError
- * );
- * ```
- */
 export class McpToolExecutionError extends BedrockAgentError {
-    /**
-     * Name of the MCP server where the tool failed.
-     */
     public readonly serverName: string;
-
-    /**
-     * Name of the tool that failed.
-     */
     public readonly toolName: string;
 
     constructor(
@@ -369,28 +216,8 @@ export class McpToolExecutionError extends BedrockAgentError {
     }
 }
 
-/**
- * Error thrown when MCP resource operations fail.
- *
- * @example
- * ```typescript
- * throw new McpResourceError(
- *   'database-service',
- *   'db://customers/schema',
- *   'Resource not found',
- *   originalError
- * );
- * ```
- */
 export class McpResourceError extends BedrockAgentError {
-    /**
-     * Name of the MCP server where the resource operation failed.
-     */
     public readonly serverName: string;
-
-    /**
-     * URI of the resource that failed.
-     */
     public readonly resourceUri: string;
 
     constructor(

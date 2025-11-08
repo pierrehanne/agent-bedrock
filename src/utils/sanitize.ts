@@ -1,13 +1,3 @@
-/**
- * Log sanitization utilities
- *
- * This module provides utilities for sanitizing log data to remove
- * Personally Identifiable Information (PII) and sensitive data.
- */
-
-/**
- * Patterns for detecting common PII types.
- */
 const PII_PATTERNS = {
     // Email addresses
     email: /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
@@ -31,9 +21,6 @@ const PII_PATTERNS = {
     awsSecretKey: /\b[A-Za-z0-9/+=]{40}\b/g,
 };
 
-/**
- * Sensitive field names that should be redacted.
- */
 const SENSITIVE_FIELDS = new Set([
     'password',
     'passwd',
@@ -58,86 +45,25 @@ const SENSITIVE_FIELDS = new Set([
     'social_security',
 ]);
 
-/**
- * Configuration options for sanitization.
- */
 export interface SanitizeConfig {
-    /**
-     * Whether to redact email addresses.
-     *
-     * @default true
-     */
+    /** @default true */
     redactEmails?: boolean;
-
-    /**
-     * Whether to redact phone numbers.
-     *
-     * @default true
-     */
+    /** @default true */
     redactPhones?: boolean;
-
-    /**
-     * Whether to redact credit card numbers.
-     *
-     * @default true
-     */
+    /** @default true */
     redactCreditCards?: boolean;
-
-    /**
-     * Whether to redact SSNs.
-     *
-     * @default true
-     */
+    /** @default true */
     redactSSNs?: boolean;
-
-    /**
-     * Whether to redact IP addresses.
-     *
-     * @default false
-     */
+    /** @default false */
     redactIPs?: boolean;
-
-    /**
-     * Whether to redact AWS credentials.
-     *
-     * @default true
-     */
+    /** @default true */
     redactAWSCredentials?: boolean;
-
-    /**
-     * Custom patterns to redact.
-     */
     customPatterns?: RegExp[];
-
-    /**
-     * Custom field names to redact.
-     */
     customSensitiveFields?: string[];
-
-    /**
-     * Replacement text for redacted values.
-     *
-     * @default '[REDACTED]'
-     */
+    /** @default '[REDACTED]' */
     replacementText?: string;
 }
 
-/**
- * Sanitizes a string by removing PII and sensitive data.
- *
- * @param text - Text to sanitize
- * @param config - Sanitization configuration
- * @returns Sanitized text
- *
- * @example
- * ```typescript
- * const sanitized = sanitizeString(
- *   'Contact me at john@example.com or 555-123-4567',
- *   { redactEmails: true, redactPhones: true }
- * );
- * // Result: 'Contact me at [REDACTED] or [REDACTED]'
- * ```
- */
 export function sanitizeString(text: string, config: SanitizeConfig = {}): string {
     const {
         redactEmails = true,
@@ -181,26 +107,7 @@ export function sanitizeString(text: string, config: SanitizeConfig = {}): strin
     return sanitized;
 }
 
-/**
- * Sanitizes an object by removing PII and sensitive data.
- * Recursively processes nested objects and arrays.
- *
- * @param obj - Object to sanitize
- * @param config - Sanitization configuration
- * @returns Sanitized object
- *
- * @example
- * ```typescript
- * const sanitized = sanitizeObject({
- *   user: {
- *     name: 'John Doe',
- *     email: 'john@example.com',
- *     password: 'secret123'
- *   }
- * });
- * // Result: { user: { name: 'John Doe', email: '[REDACTED]', password: '[REDACTED]' } }
- * ```
- */
+/** Recursively sanitizes objects and arrays, removing PII and sensitive data. */
 export function sanitizeObject(obj: any, config: SanitizeConfig = {}): any {
     const { customSensitiveFields = [], replacementText = '[REDACTED]' } = config;
 
@@ -240,13 +147,6 @@ export function sanitizeObject(obj: any, config: SanitizeConfig = {}): any {
     return sanitizeValue(obj);
 }
 
-/**
- * Checks if a field name is sensitive.
- *
- * @param fieldName - Field name to check
- * @param sensitiveFields - Set of sensitive field names
- * @returns True if the field is sensitive
- */
 function isSensitiveField(fieldName: string, sensitiveFields: Set<string>): boolean {
     const lowerFieldName = fieldName.toLowerCase();
 
@@ -265,22 +165,6 @@ function isSensitiveField(fieldName: string, sensitiveFields: Set<string>): bool
     return false;
 }
 
-/**
- * Sanitizes log data before logging.
- * Handles both string and object inputs.
- *
- * @param data - Data to sanitize
- * @param config - Sanitization configuration
- * @returns Sanitized data
- *
- * @example
- * ```typescript
- * logger.info('User data', sanitizeLogData({
- *   email: 'user@example.com',
- *   message: 'Hello world'
- * }));
- * ```
- */
 export function sanitizeLogData(data: any, config: SanitizeConfig = {}): any {
     if (typeof data === 'string') {
         return sanitizeString(data, config);
@@ -293,24 +177,6 @@ export function sanitizeLogData(data: any, config: SanitizeConfig = {}): any {
     return data;
 }
 
-/**
- * Creates a sanitization function with pre-configured options.
- * Useful for creating a consistent sanitizer across the application.
- *
- * @param config - Sanitization configuration
- * @returns Sanitization function
- *
- * @example
- * ```typescript
- * const sanitize = createSanitizer({
- *   redactEmails: true,
- *   redactPhones: true,
- *   customSensitiveFields: ['userId', 'accountId']
- * });
- *
- * logger.info('Data', sanitize(userData));
- * ```
- */
 export function createSanitizer(config: SanitizeConfig = {}): (data: any) => any {
     return (data: any) => sanitizeLogData(data, config);
 }

@@ -33,17 +33,6 @@ import { TracerHelper } from '../observability/tracer.js';
  *
  * It processes the stream of events from Bedrock and transforms them into
  * framework-specific events that can be consumed by the Agent class.
- *
- * @example
- * ```typescript
- * const handler = new StreamHandler(bedrockClient, logger, tracer);
- *
- * for await (const event of handler.handleStream(request)) {
- *   if (event.type === 'contentBlockDelta') {
- *     console.log(event.delta.text);
- *   }
- * }
- * ```
  */
 export class StreamHandler {
     private tracerHelper: TracerHelper;
@@ -72,18 +61,6 @@ export class StreamHandler {
      * @param request - Bedrock ConverseStream API request
      * @yields StreamEvent objects as they are received
      * @throws StreamError if the stream fails or times out
-     *
-     * @example
-     * ```typescript
-     * const request = {
-     *   modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
-     *   messages: [{ role: 'user', content: [{ text: 'Hello' }] }]
-     * };
-     *
-     * for await (const event of handler.handleStream(request)) {
-     *   console.log(event);
-     * }
-     * ```
      */
     async *handleStream(
         request: ConverseStreamCommandInput,
