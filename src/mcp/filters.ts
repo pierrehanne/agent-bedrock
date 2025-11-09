@@ -8,28 +8,10 @@
 import type { Logger } from '@aws-lambda-powertools/logger';
 import type { McpTool, McpToolFilter } from './types.js';
 
-/**
- * Filter result containing filtered tools and statistics.
- */
 export interface FilterResult {
-    /**
-     * Filtered tools after applying allow and deny rules.
-     */
     tools: McpTool[];
-
-    /**
-     * Number of tools before filtering.
-     */
     originalCount: number;
-
-    /**
-     * Number of tools removed by filtering.
-     */
     filteredCount: number;
-
-    /**
-     * Number of tools remaining after filtering.
-     */
     remainingCount: number;
 }
 
@@ -75,53 +57,25 @@ export function filterTools(
     logger?: Logger,
 ): FilterResult {
     const originalCount = tools.length;
-    let filtered = [...tools]; // Create a copy to avoid mutating input
+    let filtered = [...tools];
 
-    // Apply allowedTools filter first if specified
-    if (filter.allowedTools && filter.allowedTools.length > 0) {
-        const allowedSet = new Set(filter.allowedTools);
-        const beforeCount = filtered.length;
-
-        filtered = filtered.filter((tool) => allowedSet.has(tool.name));
-
-        const removedByAllow = beforeCount - filtered.length;
-        if (logger && removedByAllow > 0) {
-            logger.debug('Applied allowedTools filter', {
-                allowedTools: filter.allowedTools,
-                removedCount: removedByAllow,
-                remainingCount: filtered.length,
-            });
-        }
+    if (filter.allowedTools?.length) {
+        const allowed = new Set(filter.allowedTools);
+        filtered = filtered.filter((tool) => allowed.has(tool.name));
     }
 
-    // Apply deniedTools filter second if specified
-    if (filter.deniedTools && filter.deniedTools.length > 0) {
-        const deniedSet = new Set(filter.deniedTools);
-        const beforeCount = filtered.length;
-
-        filtered = filtered.filter((tool) => !deniedSet.has(tool.name));
-
-        const removedByDeny = beforeCount - filtered.length;
-        if (logger && removedByDeny > 0) {
-            logger.debug('Applied deniedTools filter', {
-                deniedTools: filter.deniedTools,
-                removedCount: removedByDeny,
-                remainingCount: filtered.length,
-            });
-        }
+    if (filter.deniedTools?.length) {
+        const denied = new Set(filter.deniedTools);
+        filtered = filtered.filter((tool) => !denied.has(tool.name));
     }
 
     const filteredCount = originalCount - filtered.length;
-    const remainingCount = filtered.length;
 
-    // Log summary if any tools were filtered
     if (logger && filteredCount > 0) {
         logger.info('Tool filtering applied', {
             originalCount,
             filteredCount,
-            remainingCount,
-            hasAllowedTools: !!(filter.allowedTools && filter.allowedTools.length > 0),
-            hasDeniedTools: !!(filter.deniedTools && filter.deniedTools.length > 0),
+            remainingCount: filtered.length,
         });
     }
 
@@ -129,83 +83,8 @@ export function filterTools(
         tools: filtered,
         originalCount,
         filteredCount,
-        remainingCount,
+        remainingCount: filtered.length,
     };
 }
 
-/**
- * Check if a tool filter has any filtering rules configured.
- *
- * @param filter - Tool filter configuration
- * @returns true if filter has allowedTools or deniedTools configured
- */
-export function hasFilterRules(filter?: McpToolFilter): boolean {
-    if (!filter) {
-        return false;
-    }
-
-    const hasAllowed = filter.allowedTools && filter.allowedTools.length > 0;
-    const hasDenied = filter.deniedTools && filter.deniedTools.length > 0;
-
-    return !!(hasAllowed || hasDenied);
-}
-
-/**
- * Validate tool filter configuration.
- *
- * Checks for common configuration issues:
- * - Empty arrays (should be undefined instead)
- * - Duplicate tool names within a list
- * - Tool names in both allowed and denied lists
- *
- * @param filter - Tool filter configuration to validate
- * @returns Array of validation warning messages (empty if valid)
- */
-export function validateToolFilter(filter: McpToolFilter): string[] {
-    const warnings: string[] = [];
-
-    // Check for empty arrays
-    if (filter.allowedTools && filter.allowedTools.length === 0) {
-        warnings.push('allowedTools is an empty array (should be undefined or omitted)');
-    }
-
-    if (filter.deniedTools && filter.deniedTools.length === 0) {
-        warnings.push('deniedTools is an empty array (should be undefined or omitted)');
-    }
-
-    // Check for duplicates in allowedTools
-    if (filter.allowedTools && filter.allowedTools.length > 0) {
-        const allowedSet = new Set(filter.allowedTools);
-        if (allowedSet.size < filter.allowedTools.length) {
-            warnings.push('allowedTools contains duplicate tool names');
-        }
-    }
-
-    // Check for duplicates in deniedTools
-    if (filter.deniedTools && filter.deniedTools.length > 0) {
-        const deniedSet = new Set(filter.deniedTools);
-        if (deniedSet.size < filter.deniedTools.length) {
-            warnings.push('deniedTools contains duplicate tool names');
-        }
-    }
-
-    // Check for tools in both allowed and denied lists
-    if (
-        filter.allowedTools &&
-        filter.allowedTools.length > 0 &&
-        filter.deniedTools &&
-        filter.deniedTools.length > 0
-    ) {
-        const deniedSet = new Set(filter.deniedTools);
-        const overlap = filter.allowedTools.filter((tool) => deniedSet.has(tool));
-
-        if (overlap.length > 0) {
-            warnings.push(
-                `Tools appear in both allowedTools and deniedTools: ${overlap.join(', ')} ` +
-                    '(these tools will be denied)',
-            );
-        }
-    }
-
-    return warnings;
-}
+// Removed: Over-engineered validation. Let runtime handle edge cases.

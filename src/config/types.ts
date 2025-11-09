@@ -13,18 +13,6 @@ import type { McpServerConfig } from '../mcp/types.js';
 
 /**
  * Main configuration interface for creating an Agent instance.
- *
- * @example
- * ```typescript
- * const config: AgentConfig = {
- *   name: 'my-agent',
- *   modelId: 'anthropic.claude-3-sonnet-20240229-v1:0',
- *   modelConfig: {
- *     temperature: 0.7,
- *     maxTokens: 2048
- *   }
- * };
- * ```
  */
 export interface AgentConfig {
     /**

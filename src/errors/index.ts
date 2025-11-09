@@ -152,29 +152,7 @@ export class ToolExecutionError extends BedrockAgentError {
     }
 }
 
-export class MemoryError extends BedrockAgentError {
-    constructor(
-        message: string,
-        code: ErrorCode = ErrorCode.MEMORY_ERROR,
-        cause?: Error,
-        context?: Record<string, any>,
-    ) {
-        super(message, code, cause, context);
-        this.name = 'MemoryError';
-    }
-}
-
-export class StreamError extends BedrockAgentError {
-    constructor(
-        message: string,
-        code: ErrorCode = ErrorCode.STREAM_ERROR,
-        cause?: Error,
-        context?: Record<string, any>,
-    ) {
-        super(message, code, cause, context);
-        this.name = 'StreamError';
-    }
-}
+// Removed: Use BedrockAgentError directly with appropriate ErrorCode
 
 export class McpConnectionError extends BedrockAgentError {
     public readonly serverName: string;

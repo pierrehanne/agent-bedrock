@@ -42,7 +42,7 @@ export type {
 } from './tools/index.js';
 
 export { McpClientManager, McpServerConnection } from './mcp/index.js';
-export { filterTools, hasFilterRules, validateToolFilter } from './mcp/index.js';
+export { filterTools } from './mcp/index.js';
 export type { FilterResult } from './mcp/index.js';
 
 export type {
@@ -88,8 +88,6 @@ export {
     ValidationError,
     APIError,
     ToolExecutionError,
-    MemoryError,
-    StreamError,
 } from './errors/index.js';
 
 export {

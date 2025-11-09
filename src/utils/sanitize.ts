@@ -46,18 +46,8 @@ const SENSITIVE_FIELDS = new Set([
 ]);
 
 export interface SanitizeConfig {
-    /** @default true */
-    redactEmails?: boolean;
-    /** @default true */
-    redactPhones?: boolean;
-    /** @default true */
-    redactCreditCards?: boolean;
-    /** @default true */
-    redactSSNs?: boolean;
-    /** @default false */
-    redactIPs?: boolean;
-    /** @default true */
-    redactAWSCredentials?: boolean;
+    /** Disable all built-in patterns. @default false */
+    disableDefaults?: boolean;
     customPatterns?: RegExp[];
     customSensitiveFields?: string[];
     /** @default '[REDACTED]' */
@@ -65,38 +55,19 @@ export interface SanitizeConfig {
 }
 
 export function sanitizeString(text: string, config: SanitizeConfig = {}): string {
-    const {
-        redactEmails = true,
-        redactPhones = true,
-        redactCreditCards = true,
-        redactSSNs = true,
-        redactIPs = false,
-        redactAWSCredentials = true,
-        customPatterns = [],
-        replacementText = '[REDACTED]',
-    } = config;
+    const { disableDefaults = false, customPatterns = [], replacementText = '[REDACTED]' } = config;
 
     let sanitized = text;
 
-    // Apply built-in patterns
-    if (redactEmails) {
-        sanitized = sanitized.replace(PII_PATTERNS.email, replacementText);
-    }
-    if (redactPhones) {
-        sanitized = sanitized.replace(PII_PATTERNS.phone, replacementText);
-    }
-    if (redactCreditCards) {
-        sanitized = sanitized.replace(PII_PATTERNS.creditCard, replacementText);
-    }
-    if (redactSSNs) {
-        sanitized = sanitized.replace(PII_PATTERNS.ssn, replacementText);
-    }
-    if (redactIPs) {
-        sanitized = sanitized.replace(PII_PATTERNS.ipAddress, replacementText);
-    }
-    if (redactAWSCredentials) {
-        sanitized = sanitized.replace(PII_PATTERNS.awsAccessKey, replacementText);
-        sanitized = sanitized.replace(PII_PATTERNS.awsSecretKey, replacementText);
+    // Apply all built-in patterns by default
+    if (!disableDefaults) {
+        sanitized = sanitized
+            .replace(PII_PATTERNS.email, replacementText)
+            .replace(PII_PATTERNS.phone, replacementText)
+            .replace(PII_PATTERNS.creditCard, replacementText)
+            .replace(PII_PATTERNS.ssn, replacementText)
+            .replace(PII_PATTERNS.awsAccessKey, replacementText)
+            .replace(PII_PATTERNS.awsSecretKey, replacementText);
     }
 
     // Apply custom patterns
@@ -165,18 +136,4 @@ function isSensitiveField(fieldName: string, sensitiveFields: Set<string>): bool
     return false;
 }
 
-export function sanitizeLogData(data: any, config: SanitizeConfig = {}): any {
-    if (typeof data === 'string') {
-        return sanitizeString(data, config);
-    }
-
-    if (typeof data === 'object' && data !== null) {
-        return sanitizeObject(data, config);
-    }
-
-    return data;
-}
-
-export function createSanitizer(config: SanitizeConfig = {}): (data: any) => any {
-    return (data: any) => sanitizeLogData(data, config);
-}
+// Removed: Use sanitizeString/sanitizeObject directly

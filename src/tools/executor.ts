@@ -18,17 +18,6 @@ import type { McpClientManager } from '../mcp/client-manager.js';
  * tool inputs against JSON schemas, and executes tool handlers with
  * comprehensive error handling and observability. Supports both local
  * tools and MCP server tools.
- *
- * @example
- * ```typescript
- * const executor = new ToolExecutor(tools, mcpClientManager, logger, metrics);
- *
- * const result = await executor.executeTool({
- *   toolUseId: 'tool_123',
- *   name: 'get_weather',
- *   input: { location: 'San Francisco' }
- * });
- * ```
  */
 export class ToolExecutor {
     /**
@@ -90,22 +79,6 @@ export class ToolExecutor {
      *
      * @param tool - Tool definition to register
      * @throws {ToolExecutionError} If tool definition is invalid
-     *
-     * @example
-     * ```typescript
-     * executor.registerTool({
-     *   name: 'calculate',
-     *   description: 'Performs mathematical calculations',
-     *   inputSchema: {
-     *     type: 'object',
-     *     properties: {
-     *       expression: { type: 'string' }
-     *     },
-     *     required: ['expression']
-     *   },
-     *   handler: async (input) => eval(input.expression)
-     * });
-     * ```
      */
     registerTool(tool: ToolDefinition): void {
         // Validate tool definition
@@ -163,15 +136,6 @@ export class ToolExecutor {
      *
      * @param toolUse - Tool use request from the model
      * @returns Promise resolving to tool execution result
-     *
-     * @example
-     * ```typescript
-     * const result = await executor.executeTool({
-     *   toolUseId: 'tool_abc123',
-     *   name: 'get_weather',
-     *   input: { location: 'New York' }
-     * });
-     * ```
      */
     async executeTool(toolUse: ToolUse): Promise<ToolResult> {
         const { toolUseId, name, input } = toolUse;
